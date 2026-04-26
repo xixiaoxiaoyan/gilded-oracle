@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tailwindcss *)",
+      "Bash(./node_modules/.bin/tailwindcss init *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(npm show *)",
+      "Bash(npm list *)",
+      "Bash(npm uninstall *)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
