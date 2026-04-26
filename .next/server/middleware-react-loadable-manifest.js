@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app/page.tsx -> @/components/OracleDeck\":{\"id\":\"app/page.tsx -> @/components/OracleDeck\",\"files\":[\"static/chunks/_app-pages-browser_src_components_OracleDeck_tsx.js\"]}}"
