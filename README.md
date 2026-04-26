@@ -1,16 +1,73 @@
-# React + Vite
+# Echo & Mirror | 倾听内心的雷诺曼
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个优雅的雷诺曼卡牌占卜应用，融合欧式复古美学与 iOS 设计语言。
 
-Currently, two official plugins are available:
+## ✨ 特性
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **三种经典牌阵**：每日一抽、经典三牌、命运九宫格
+- **深度心理解读**：基于心理学视角的四维度分析
+- **沉浸式体验**：长按洗牌、意念锁定、流畅动画
+- **优雅设计**：毛玻璃材质、哑光金点缀、丝绒纹理
+- **响应式布局**：完美适配各种设备
 
-## React Compiler
+## 🎨 设计理念
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **极简而不简单**：大量留白，克制的装饰
+- **高逼格不浮夸**：哑光金只在关键位置出现
+- **欧式复古 + iOS**：古典美学与现代科技的完美融合
 
-## Expanding the ESLint configuration
+## 🚀 技术栈
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Next.js 15 (App Router)
+- React 18
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+
+## 📦 本地运行
+
+```bash
+npm install
+npm run dev
+```
+
+访问 http://localhost:3000
+
+## 🌟 核心功能
+
+### 1. 意念锁定
+必须先输入问题才能抽牌，建立与内心的链接
+
+### 2. 长按洗牌
+长按 1.5 秒触发洗牌，流光效果显示进度
+
+### 3. 深度解读
+- **心流镜像**：解析潜意识状态
+- **能量脉络**：分析牌与牌之间的流动关系
+- **现实映照**：投射到具体生活场景
+- **诚恳建议**：提供可行的行动指引
+
+## 🎴 牌阵说明
+
+### 每日一抽（1张）
+快速获得日常指引
+
+### 经典三牌（3张）
+过去 → 现在 → 未来 的完整叙事
+
+### 命运九宫格（9张）
+全方位的生命图景分析
+
+## 📜 许可证
+
+MIT
+
+## 🙏 致谢
+
+- 雷诺曼卡牌传统占卜体系
+- Apple Human Interface Guidelines
+- 所有贡献者和占卜师
+
+---
+
+**Echo & Mirror** — 倾听内心的声音 ✨
