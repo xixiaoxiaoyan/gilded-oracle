@@ -220,6 +220,7 @@ export default function OracleDeck() {
   // 环境音系统
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [selectedSound, setSelectedSound] = useState<'fireplace' | 'rain'>('fireplace')
+  const [audioLoading, setAudioLoading] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const currentSpread = SPREADS[selectedSpread as keyof typeof SPREADS]
@@ -231,23 +232,48 @@ export default function OracleDeck() {
   // 音效管理
   useEffect(() => {
     if (soundEnabled) {
+      setAudioLoading(true)
       if (!audioRef.current) {
         audioRef.current = new Audio()
         audioRef.current.loop = true
-        audioRef.current.volume = 0.15 // 极低分贝
+        audioRef.current.volume = 0.25 // 稍微提高音量
       }
 
-      // 根据选择设置音效源（使用免费的音效资源）
+      // 根据选择设置音效源（使用更可靠的免费音效资源）
       if (selectedSound === 'fireplace') {
-        audioRef.current.src = 'https://assets.mixkit.co/active_storage/sfx/2418/2418-preview.m4a'
+        // 使用免费的壁炉声音
+        audioRef.current.src = 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Campfire_crackle_sound.ogg'
       } else {
-        audioRef.current.src = 'https://assets.mixkit.co/active_storage/sfx/2450/2450-preview.m4a'
+        // 使用免费的雨声音效
+        audioRef.current.src = 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Rain_falling_on_leaves.ogg'
       }
 
-      audioRef.current.play().catch(() => {
-        console.log('Audio autoplay was prevented')
-      })
+      // 音频加载完成后播放
+      audioRef.current.addEventListener('canplaythrough', () => {
+        setAudioLoading(false)
+      }, { once: true })
+
+      // 音频加载失败处理
+      audioRef.current.addEventListener('error', () => {
+        setAudioLoading(false)
+        console.log('音频加载失败')
+      }, { once: true })
+
+      // 尝试播放，处理自动播放阻止
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setAudioLoading(false)
+          })
+          .catch((error) => {
+            setAudioLoading(false)
+            console.log('Audio autoplay was prevented:', error)
+            // 不显示错误给用户，因为音频是可选功能
+          })
+      }
     } else {
+      setAudioLoading(false)
       if (audioRef.current) {
         audioRef.current.pause()
       }
@@ -405,17 +431,42 @@ export default function OracleDeck() {
               </button>
             </motion.div>
           )}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="w-12 h-12 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white/60 hover:text-white/80 hover:border-white/20 transition-all"
-          >
-            {soundEnabled ? (
-              <Volume2 size={20} />
-            ) : (
-              <VolumeX size={20} />
+          <div className="relative">
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              disabled={audioLoading}
+              className="w-12 h-12 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white/60 hover:text-white/80 hover:border-white/20 transition-all disabled:opacity-50"
+              title={soundEnabled ? "关闭环境音" : "开启环境音"}
+            >
+              {audioLoading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white/60 rounded-full animate-spin" />
+              ) : soundEnabled ? (
+                <Volume2 size={20} />
+              ) : (
+                <VolumeX size={20} />
+              )}
+            </button>
+            {/* 音频状态提示 */}
+            {soundEnabled && !audioLoading && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#d4af37]/80 rounded-full"
+                style={{ boxShadow: '0 0 8px rgba(212, 175, 55, 0.4)' }}
+              />
             )}
-          </button>
+          </div>
         </div>
+        {/* 音频提示 */}
+        {!soundEnabled && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-[10px] font-sans text-white/30 mt-2 text-right font-light"
+          >
+            点击开启环境音
+          </motion.p>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto px-8 py-20">
