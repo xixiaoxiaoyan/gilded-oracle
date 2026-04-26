@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shuffle, RefreshCw, Sparkles, Lock, BookOpen } from 'lucide-react'
+import { Shuffle, RefreshCw, Sparkles, Lock, BookOpen, Volume2, VolumeX } from 'lucide-react'
 import { lenormandCards } from '@/data/lenormandData'
 
 const SPREADS = {
@@ -31,178 +31,162 @@ const SPREADS = {
 }
 
 /**
- * 心灵洞察引擎
- * 基于心理学视角的深度解读
+ * 深度解读引擎 - 资深心理占卜师口吻
+ * 从【现状】、【阻碍】、【指引】三个维度给出真诚的长文本建议
  */
 const generateOracleReading = (question: string, drawnCards: any[], spreadType: string) => {
-  const spread = SPREADS[spreadType as keyof typeof SPREADS]
+  const cards = drawnCards
 
-  // 生成心流镜像
-  const buildFlowMirror = () => {
-    const firstCard = drawnCards[0]
-    const lastCard = drawnCards[drawnCards.length - 1]
+  // 【现状】分析
+  const buildCurrentSituation = () => {
+    let situation = ""
 
-    return `
-【心流镜像】
-
-${question ? `关于您关心的「${question}」` : '从您抽取的牌面来看'}，这组牌映照出您内心深处的一种状态。
-
-${firstCard.name}的出现，暗示您的潜意识正在关注${firstCard.keywords[0]}与${firstCard.keywords[1]}的议题。${lastCard.name}则揭示您内心深处对${lastCard.keywords[0]}的渴望或担忧。
-
-这组牌的整体能量显示：您正处于一个${drawnCards.length > 1 ? '转变' : '觉察'}的关口。牌面没有绝对的好与坏，而是您内心投射的一面镜子。${drawnCards.some(c => c.name === '云' || c.name === '狐狸' || c.name === '蛇') ? '某些牌暗示您可能感到困惑或需要谨慎，但这正是成长的契机。' : '牌面显示您正以清晰、积极的心态面对当前状况。'}
-`
-  }
-
-  // 生成能量脉络
-  const buildEnergyFlow = () => {
     if (spreadType === 'single') {
-      const card = drawnCards[0]
-      return `
-【能量脉络】
+      const card = cards[0]
+      situation = `现在，让我们真诚地面对您当下的处境。
 
-${card.name}作为唯一的指引，其能量聚焦于${card.keywords[0]}。这张牌在您的意识场中形成了一个清晰的焦点，建议您将注意力集中在${card.keywords[1]}所代表的生命面向。
-`
+${card.name}这张牌出现在您面前，并非偶然。它映照出您生命中最真实的那个面向。从牌面上看，您正处于一个与${card.keywords[0]}和${card.keywords[1]}密切相关的阶段。
+
+这张牌在告诉您：您现在所经历的一切——无论是内心的感受还是外在的境遇——都是真实的、值得被看见的。${card.meaning}
+
+${question ? `当您问起「${question}」时，这张牌回应说：您对${card.keywords[0]}的关注和感受是合理的，是值得被认真对待的。` : '这张牌在提醒您：不要忽视当下的感受和处境，它们都是您生命旅程中重要的一部分。'}`
+    } else if (spreadType === 'three') {
+      const [past, present, future] = cards
+      situation = `现在，让我们真诚地面对您当下的处境。
+
+这组牌展现了一个完整的故事。${past.name}代表您走过的路，${present.name}是您此刻的立足点，而${future.name}则指向未来的可能性。
+
+从${past.keywords[0]}的经历出发，您经历了转变和成长，最终抵达了${present.keywords[0]}的当下。${present.meaning}
+
+${present.name}在告诉您：您现在所经历的一切——无论是内心的感受还是外在的境遇——都是真实的、值得被看见的。${past.name}的过去没有消失，它成为了您现在的一部分；而${future.name}的未来也并非遥不可及，它正在从您当下的每一刻中孕育而生。
+
+${question ? `当您问起「${question}」时，这组牌回应说：从${past.keywords[0]}的过去到${present.keywords[0]}的当下，您已经走了一段重要的路。而${future.keywords[0]}的未来，正在从您现在的每一个选择中逐渐成形。` : '这组牌在提醒您：不要割裂地看待过去、现在和未来，它们是一个连续的流动，共同构成了您生命的完整图景。'}`
+    } else if (spreadType === 'nine') {
+      situation = `现在，让我们真诚地面对您当下的处境。
+
+这九张牌构成了一个完整的生命图景。让我们先看看您当下的立足点——${cards[4].name}（核心）这张牌。${cards[4].meanings}
+
+${cards[0].name}（现状）与${cards[3].name}（近期）共同描述了您现在的处境。${cards[0].meaning}而${cards[3].keywords[0]}则显示，在最近的时光里，您正在经历与${cards[3].keywords[1]}相关的体验。
+
+${cards[7].name}（环境）和${cards[5].name}（外部影响）也在塑造着您现在的处境。${cards[7].keywords[0]}和${cards[5].keywords[0]}的力量交织在一起，构成了您当下的生活场域。
+
+${question ? `当您问起「${question}」时，这个九宫格回应说：您当下的处境是多维度的，${cards[4].keywords[0]}是核心议题，而${cards[0].keywords[0]}和${cards[3].keywords[0]}则描述了它的具体表现。` : '这个九宫格在提醒您：您当下的处境是多层次的，内在感受、外在环境、过去经历和未来期待都在同时起作用。'}`
     }
 
-    if (spreadType === 'three') {
-      const [past, present, future] = drawnCards
-      return `
-【能量脉络】
-
-这组牌展现了一条完整的能量流动路径：
-
-${past.name}的原始能量正流向${present.name}，这意味着从${past.keywords[0]}的经历出发，您正在经历${present.keywords[0]}的转化过程。${past.keywords[1]}是这段旅程的起点，而${present.keywords[1]}则是您当下需要直面和整合的核心议题。
-
-${present.name}到${future.name}的能量流动显示了进化的方向：${present.keywords[0]}将孕育出${future.keywords[0]}的果实。${future.keywords[1]}是这股能量最终要去的地方。
-
-特别关注${present.name}——它是整个能量流的枢纽。${past.keywords[0]}的过去正在${present.keywords[0]}的当下被重新定义，而${future.keywords[0]}的未来正是这个转化的自然延伸。
-`
-    }
-
-    if (spreadType === 'nine') {
-      const cards = drawnCards
-      return `
-【能量脉络】
-
-九宫格展现了一个立体的能量网络：
-
-核心能量从${cards[4].name}向外辐射——${cards[4].keywords[0]}是整个局势的锚点。${cards[0].name}（现状）与${cards[8].name}（结局）形成了一条时间线，显示从${cards[0].keywords[0]}到${cards[8].keywords[0]}的演变轨迹。
-
-${cards[3].name}（近期）与${cards[2].name}（远期）构成了时间维度的深度，${cards[1].name}（挑战）则是需要突破的阻力点。
-
-${cards[5].name}（外部影响）与${cards[7].name}（环境）共同塑造了您所处的场域，而${cards[6].name}（潜意识）则是这些外在投射的内在根源。
-
-这九张牌的能量相互交织：${cards[4].keywords[0]}的核心议题受到${cards[1].keywords[0]}的挑战，同时得到${cards[5].keywords[0]}与${cards[7].keywords[0]}的支持。您的潜意识（${cards[6].keywords[0]}）正在这个复杂的能量场中寻找出路。
-`
-    }
-
-    return ''
+    return situation
   }
 
-  // 生成现实映照
-  const buildRealityReflection = () => {
-    const cards = drawnCards
+  // 【阻碍】分析
+  const buildObstacles = () => {
+    let obstacles = ""
 
-    // 分析不同生活面向
-    const aspects: string[] = []
-
-    // 事业/目标面向
-    const careerCards = cards.filter(c =>
-      ['船', '塔', '钥匙', '太阳', '月亮', '星星'].includes(c.name)
-    )
-    if (careerCards.length > 0) {
-      aspects.push(`事业与发展：${careerCards.map(c => c.name).join('、')}的出现，显示您在职业或人生目标方面${careerCards.length >= 2 ? '正在经历重要的转变期' : '需要保持清晰的规划'}。${careerCards[0].keywords[0]}是关键。`)
-    }
-
-    // 人际关系面向
-    const relationshipCards = cards.filter(c =>
-      ['心', '戒指', '狗', '女人', '男人', '百合'].includes(c.name)
-    )
-    if (relationshipCards.length > 0) {
-      aspects.push(`人际关系：${relationshipCards.map(c => c.name).join('、')}提示您，关系中的${relationshipCards[0].keywords[0]}值得您深思。${relationshipCards.some(c => c.name === '心' || c.name === '戒指') ? '深层情感连接正在发生或需要被关注。' : '人际互动的模式正在转变。'}`)
-    }
-
-    // 内心状态面向
-    const innerCards = cards.filter(c =>
-      ['书', '树', '云', '蛇', '老鼠', '棺材'].includes(c.name)
-    )
-    if (innerCards.length > 0) {
-      aspects.push(`内在状态：${innerCards.map(c => c.name).join('、')}映照出您内心的${innerCards[0].keywords[0]}。${innerCards.some(c => c.name === '云' || c.name === '老鼠') ? '一些困惑或担忧需要被正视和整合。' : '您的内在智慧正在指引方向。'}`)
-    }
-
-    // 财务/资源面向
-    const resourceCards = cards.filter(c =>
-      ['鱼', '熊', '幸运草', '锚'].includes(c.name)
-    )
-    if (resourceCards.length > 0) {
-      aspects.push(`资源与保障：${resourceCards.map(c => c.name).join('、')}显示您在物质层面的${resourceCards[0].keywords[0]}。${resourceCards.some(c => c.name === '鱼' || c.name === '熊') ? '资源相对充足或即将到来。' : '需要谨慎管理现有资源。'}`)
-    }
-
-    if (aspects.length === 0) {
-      aspects.push(`生活面向：${cards[0].name}与${cards[cards.length - 1].name}显示，您当前的生命主题围绕${cards[0].keywords[0]}展开，并指向${cards[cards.length - 1].keywords[0]}的方向。`)
-    }
-
-    return `
-【现实映照】
-
-将牌义投射到具体生活场景：
-
-${aspects.join('\n\n')}
-
-${question ? `回到您的问题「${question}」，这些牌显示：${cards[0].keywords[0]}是当前的切入点，而${cards[cards.length - 1].keywords[0]}是您需要关注的成长方向。` : '这些牌的现实意义在于：帮助您看清当前的真实状况，而非沉溺于幻想或恐惧。'}
-`
-  }
-
-  // 生成诚恳建议
-  const buildSincereAdvice = () => {
-    const cards = drawnCards
-    const advice: string[] = []
-
-    // 基于第一张牌的建议
-    advice.push(`• ${cards[0].keywords[0]}的启示：${cards[0].meaning}`)
-
-    // 基于中间/核心牌的建议
-    if (cards.length >= 3) {
-      const middleCard = cards[Math.floor(cards.length / 2)]
-      advice.push(`• 当前焦点：关注${middleCard.keywords[0]}，这是${middleCard.keywords[1]}的关键时刻。`)
-    }
-
-    // 基于最后一张牌的建议
-    advice.push(`• 行动方向：${cards[cards.length - 1].keywords[0]}是您需要投入注意力的领域。${cards[cards.length - 1].meaning}`)
-
-    // 综合建议
-    const coreCards = cards.filter(c =>
-      ['树', '心', '太阳', '星星', '钥匙'].includes(c.name)
-    )
+    // 识别挑战牌
     const challengeCards = cards.filter(c =>
-      ['云', '蛇', '老鼠', '棺材', '十字架'].includes(c.name)
+      ['云', '蛇', '老鼠', '棺材', '山', '十字架', '鞭子'].includes(c.name)
     )
 
-    if (challengeCards.length > coreCards.length) {
-      advice.push(`• 特别提醒：牌面显示您面临一些挑战。建议您${challengeCards[0].keywords[0]}需要被正视，但不要过度担忧。${challengeCards.length > 1 ? '多个挑战同时出现时，优先处理最紧迫的那一个。' : '寻求支持是明智的选择。'}`)
-    } else if (coreCards.length > 0) {
-      advice.push(`• 积极信号：${coreCards.map(c => c.name).join('、')}显示内在资源充足。信任${coreCards[0].keywords[0]}的力量，它会为您指引方向。`)
+    if (challengeCards.length === 0) {
+      obstacles = `关于阻碍，我想告诉您：从这组牌来看，您现在并没有遇到明显的内在或外在阻力。
+
+但这并不意味着没有挑战。很多时候，最大的阻碍是我们自己的恐惧、犹豫或自我怀疑。即使牌面上没有出现明显的挑战牌，您仍然可能在内心深处感到不安或困惑。
+
+如果您确实感到有什么在阻碍着您，那么这种阻碍很可能来自于：
+• 对未知的恐惧
+• 对自己能力的不信任
+• 对变化的抗拒
+• 对他人期待的内在化
+
+请记住：这些感受都是正常的。它们不是您软弱的表现，而是您真实人性的一部分。允许自己感受这些情绪，不评判它们，这本身就是跨越障碍的第一步。`
+    } else {
+      const obstacleDescriptions: string[] = []
+
+      challengeCards.forEach(card => {
+        if (card.name === '云') {
+          obstacleDescriptions.push(`${card.name}出现在这里，说明您正在经历困惑和不确定。这种迷茫感可能让一切都变得不清晰，您不知道该往哪个方向走。但我想告诉您：困惑是成长的前奏。当旧的认知不再适用，而新的理解尚未形成时，困惑就会自然产生。它不是错误，而是转变的信号。`)
+        } else if (card.name === '蛇') {
+          obstacleDescriptions.push(`${card.name}的出现，提示您需要警惕可能存在的欺骗或复杂情况。这可能来自他人，也可能来自您自己的自我欺骗。有时候，我们会欺骗自己，假装一切都好，或者逃避面对真相。这张牌在温和地提醒您：诚实地面对自己和他人，即使真相并不总是令人愉悦。`)
+        } else if (card.name === '老鼠') {
+          obstacleDescriptions.push(`${card.name}在这里，表示有一些事情正在逐渐侵蚀您的能量、资源或信心。这可能不是一次大的打击，而是许多小事的累积——那些被忽视的细节、未被表达的感受、被推迟的决定。它们看似微不足道，但长期积累下来，却可能造成实质性的损耗。这张牌在提醒您：关注那些细小的问题，在它们变得无法处理之前。`)
+        } else if (card.name === '棺材') {
+          obstacleDescriptions.push(`${card.name}的出现，可能让您感到不安。但我想告诉您：这张牌并不总是代表消极的意义。它更多是在提示您，某个阶段、某种模式、某个关系或某种心态正在或需要结束。这种结束可能让人感到痛苦，但它也是新生的必要条件。没有结束，就没有开始。`)
+        } else if (card.name === '山') {
+          obstacleDescriptions.push(`${card.name}在这里，清晰地显示了您面临的障碍。这是一座需要攀登的山，一个需要克服的挑战。它可能是一个实际的困难，也可能是一个内心的阻碍——恐惧、自我怀疑、或不安全感。无论这座山是什么，我想告诉您：它不是不可逾越的。它需要时间、耐心和坚持，但它是可以跨越的。`)
+        } else if (card.name === '十字架') {
+          obstacleDescriptions.push(`${card.name}出现在这里，说明您正在承担某种责任或负担。这可能是一种道德责任，一个对他人的承诺，或是一个您无法推卸的义务。这种负担可能让您感到沉重，但它也是您生命意义的一部分。这张牌在提醒您：您不需要独自承担一切，寻求支持是明智的，不是软弱的表现。`)
+        } else if (card.name === '鞭子') {
+          obstacleDescriptions.push(`${card.name}在这里，提示可能存在冲突、争论或重复性困境。这可能是一个外在的冲突——与他人的分歧或争执；也可能是一个内在的冲突——您自己内心的矛盾和纠结。无论是哪种，这张牌都在提醒您：真正的解决不是来自对抗，而是来自理解和整合。`)
+        }
+      })
+
+      obstacles = `关于阻碍，我想真诚地与您探讨。
+
+这组牌显示了一些挑战性的力量。让我为您解读：
+
+${obstacleDescriptions.join('\n\n')}
+
+${challengeCards.length > 1 ? `当多张挑战牌同时出现时，这些障碍之间可能存在关联。它们可能不是独立的问题，而是同一困境的不同面向。我建议您：先处理最紧迫的那个，其他的往往会随之松动。` : '这个障碍是真实的，但它不是故事的全部。它只是您当前处境中的一个面向，不是全部。'}
+
+请记住：承认障碍的存在，不等于向它屈服。相反，只有诚实地看见它，您才能找到跨越它的方法。`
     }
 
-    return `
-【诚恳建议】
+    return obstacles
+  }
 
-${advice.join('\n\n')}
+  // 【指引】建议
+  const buildGuidance = () => {
+    let guidance = ""
 
-最后，请记住：这些牌不是宿命的判决，而是当下视角的映射。如果您不喜欢当前的"剧本"，您完全有能力改写它。${cards[cards.length - 1].keywords[1]}已经为您指明了可能的方向。
+    // 识别积极牌
+    const positiveCards = cards.filter(c =>
+      ['太阳', '星星', '幸运草', '花束', '心', '钥匙', '狗', '鹳鸟', '百合'].includes(c.name)
+    )
 
-每天都是新的开始。
-`
+    // 识别行动牌
+    const actionCards = cards.filter(c =>
+      ['骑士', '船', '路', '镰刀', '鸟', '鱼'].includes(c.name)
+    )
+
+    guidance = `现在，让我为您提供一些真诚的指引。
+
+首先，我想确认您的资源。${positiveCards.length > 0 ? `这组牌中有一些非常积极的能量：${positiveCards.map(c => c.name).join('、')}。这些牌显示，您拥有${positiveCards[0].keywords[0]}的内在资源，${positiveCards.length > 1 ? '以及' + positiveCards[1].keywords[0] + '的支持。' : ''}信任这些力量，它们会为您指引方向。` : '即使牌面中没有明显的积极牌，这也不意味着您没有资源。您本身——您的勇气、智慧、和求问的意愿——就是最重要的资源。'}
+
+${actionCards.length > 0 ? `其次，这组牌提示了一些可能的行动方向：${actionCards.map(c => c.name).join('、')}。${actionCards[0].keywords[0]}和${actionCards[0].keywords[1]}是值得您关注的生命面向。` : '关于行动，我建议您从小步开始。不要急于大的改变，而是从日常中可以立即实施的小行动开始。'}
+
+基于这组牌，我想给您以下具体建议：
+
+• 关注您的${cards[0].keywords[0]}。这张牌是整个解读的入口，它指出了最需要您关注和投入的那个生命面向。
+
+${cards.length >= 2 ? `• 注意您与${cards[1].keywords[0]}的关系。这张牌在提示您，${cards[1].keywords[1]}可能在您现在的处境中扮演重要角色。` : ''}
+
+${cards.length >= 3 ? `• 特别关注${cards[Math.floor(cards.length / 2)].name}（${cards[Math.floor(cards.length / 2)].keywords[0]}）。这张牌位于中心位置，${cards[Math.floor(cards.length / 2)].meaning}` : ''}
+
+• ${cards[cards.length - 1].keywords[0]}指向了未来的可能性。${cards[cards.length - 1].meaning}
+
+最后，我想说：这些牌不是宿命的判决，而是当下视角的映射。它们在告诉您"现在是什么"和"可能是什么"，但它们不能决定"将要是什么"。真正的力量始终在您手中。
+
+${question ? `关于「${question}」，这组牌的建议是：从${cards[0].keywords[0]}开始，信任${cards[cards.length - 1].keywords[0]}的可能性。您拥有面对这个问题的智慧和勇气。` : '信任这个过程。有时候，答案不是立即显现的，但只要您保持诚实和耐心，方向会逐渐清晰。'}
+
+愿您在反思中找到力量，在行动中找到方向。
+
+您并不孤单，这本身就是一个重要的真相。`
+
+    return guidance
   }
 
   const readingText = `
-${buildFlowMirror()}
+【现状】
 
-${buildEnergyFlow()}
+${buildCurrentSituation()}
 
-${buildRealityReflection()}
 
-${buildSincereAdvice()}
+【阻碍】
+
+${buildObstacles()}
+
+
+【指引】
+
+${buildGuidance()}
 `
 
   return {
@@ -233,11 +217,48 @@ export default function OracleDeck() {
   const shuffleTimerRef = useRef<NodeJS.Timeout | null>(null)
   const shuffleIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
+  // 环境音系统
+  const [soundEnabled, setSoundEnabled] = useState(false)
+  const [selectedSound, setSelectedSound] = useState<'fireplace' | 'rain'>('fireplace')
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
   const currentSpread = SPREADS[selectedSpread as keyof typeof SPREADS]
   const canDraw = drawnCards.length < currentSpread.count
   const isComplete = drawnCards.length === currentSpread.count
   const hasQuestion = question.trim().length > 0
   const isDeckLocked = !hasQuestion
+
+  // 音效管理
+  useEffect(() => {
+    if (soundEnabled) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio()
+        audioRef.current.loop = true
+        audioRef.current.volume = 0.15 // 极低分贝
+      }
+
+      // 根据选择设置音效源（使用免费的音效资源）
+      if (selectedSound === 'fireplace') {
+        audioRef.current.src = 'https://assets.mixkit.co/active_storage/sfx/2418/2418-preview.m4a'
+      } else {
+        audioRef.current.src = 'https://assets.mixkit.co/active_storage/sfx/2450/2450-preview.m4a'
+      }
+
+      audioRef.current.play().catch(() => {
+        console.log('Audio autoplay was prevented')
+      })
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause()
+      }
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+      }
+    }
+  }, [soundEnabled, selectedSound])
 
   const shuffleDeck = () => {
     setIsShuffling(true)
@@ -257,23 +278,23 @@ export default function OracleDeck() {
     setIsShufflePressed(true)
     setShuffleProgress(0)
 
-    // 进度条动画
+    // 进度条动画 - 2秒内完成
     shuffleIntervalRef.current = setInterval(() => {
       setShuffleProgress(prev => {
         if (prev >= 100) {
           clearInterval(shuffleIntervalRef.current!)
           return 100
         }
-        return prev + 2 // 1.5秒内完成 (100 / 50 intervals * 30ms)
+        return prev + 1.5 // 2秒内完成 (100 / 66.67 intervals * 30ms)
       })
     }, 30)
 
-    // 1.5秒后触发洗牌
+    // 2秒后触发洗牌
     shuffleTimerRef.current = setTimeout(() => {
       shuffleDeck()
       setIsShufflePressed(false)
       setShuffleProgress(0)
-    }, 1500)
+    }, 2000)
   }
 
   const endShufflePress = () => {
@@ -353,6 +374,50 @@ export default function OracleDeck() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-[#1a1614]">
+      {/* 环境音控制 - 右上角 */}
+      <div className="fixed top-8 right-8 z-50">
+        <div className="flex items-center gap-3">
+          {soundEnabled && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-2"
+            >
+              <button
+                onClick={() => setSelectedSound(selectedSound === 'fireplace' ? 'rain' : 'fireplace')}
+                className={`text-xs font-sans px-3 py-1.5 rounded-xl transition-all font-light ${
+                  selectedSound === 'fireplace'
+                    ? 'bg-white/20 text-white/90'
+                    : 'text-white/40 hover:text-white/60'
+                }`}
+              >
+                壁炉
+              </button>
+              <button
+                onClick={() => setSelectedSound(selectedSound === 'rain' ? 'fireplace' : 'rain')}
+                className={`text-xs font-sans px-3 py-1.5 rounded-xl transition-all font-light ${
+                  selectedSound === 'rain'
+                    ? 'bg-white/20 text-white/90'
+                    : 'text-white/40 hover:text-white/60'
+                }`}
+              >
+                细雨
+              </button>
+            </motion.div>
+          )}
+          <button
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className="w-12 h-12 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white/60 hover:text-white/80 hover:border-white/20 transition-all"
+          >
+            {soundEnabled ? (
+              <Volume2 size={20} />
+            ) : (
+              <VolumeX size={20} />
+            )}
+          </button>
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-8 py-20">
         {/* 标题 - 增加呼吸感 */}
         <motion.div
@@ -424,7 +489,7 @@ export default function OracleDeck() {
               >
                 <Lock size={20} className="text-white/50 flex-shrink-0 mt-0.5" />
                 <p className="font-sans text-sm text-white/60 font-light">
-                  请先建立与内心的链接，写下您的问题
+                  请先诚实地写下您心中的困惑。
                 </p>
               </motion.div>
             )}
@@ -474,24 +539,45 @@ export default function OracleDeck() {
                 ) : isShufflePressed ? (
                   <>
                     <Shuffle size={18} />
-                    正在同步您的心流状态...
+                    正在同步您的心流...
                   </>
                 ) : (
                   <>
                     <Shuffle size={18} />
-                    长按洗牌 (1.5s)
+                    长按洗牌 (2s)
                   </>
                 )}
 
-                {/* 进度条 - 哑光金 */}
+                {/* 进度条 - 哑光金呼吸效果 */}
                 {isShufflePressed && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent"
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${shuffleProgress}%` }}
-                    transition={{ duration: 0.03 }}
-                    style={{ boxShadow: '0 0 8px rgba(212, 175, 55, 0.3)' }}
-                  />
+                  <>
+                    <motion.div
+                      className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent"
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${shuffleProgress}%` }}
+                      transition={{ duration: 0.03 }}
+                      style={{
+                        boxShadow: '0 0 12px rgba(212, 175, 55, 0.5), 0 0 24px rgba(212, 175, 55, 0.3)'
+                      }}
+                    />
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl"
+                      initial={{ opacity: 0 }}
+                      animate={{
+                        opacity: [0, 0.3, 0],
+                        boxShadow: [
+                          'inset 0 0 20px rgba(212, 175, 55, 0)',
+                          'inset 0 0 30px rgba(212, 175, 55, 0.4)',
+                          'inset 0 0 20px rgba(212, 175, 55, 0)'
+                        ]
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  </>
                 )}
               </button>
 
@@ -527,7 +613,7 @@ export default function OracleDeck() {
               >
                 <Lock size={18} className="text-white/30" />
                 <p className="font-sans text-sm text-white/40 font-light">
-                  请先建立内心链接
+                  请先诚实地写下您心中的困惑。
                 </p>
               </motion.div>
             )}
