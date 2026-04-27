@@ -16,7 +16,12 @@
       "Bash(git rm *)",
       "Bash(git remote *)",
       "Bash(git push *)",
-      "Bash(pkill *)"
+      "Bash(pkill *)",
+      "Bash(curl -I https://gilded-oracle.vercel.app/)",
+      "Bash(curl -I https://gilded-oracle.vercel.app --max-time 10)",
+      "Bash(vercel ls *)",
+      "Bash(curl *)",
+      "Bash(git config *)"
     ]
   }
 }
