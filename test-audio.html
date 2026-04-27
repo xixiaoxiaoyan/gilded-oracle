@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频测试</title>
+</head>
+<body style="background: #000; color: #fff; padding: 20px;">
+    <h1>音频测试页面</h1>
+
+    <div style="margin: 20px 0;">
+        <h2>测试1: 直接MP3播放</h2>
+        <audio id="audio1" controls loop>
+            <source src="https://assets.mixkit.co/active_storage/sfx/2414/2414-preview.mp3" type="audio/mpeg">
+        </audio>
+        <button onclick="document.getElementById('audio1').play()">播放</button>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h2>测试2: 雨声</h2>
+        <audio id="audio2" controls loop>
+            <source src="https://assets.mixkit.co/active_storage/sfx/1912/1912-preview.mp3" type="audio/mpeg">
+        </audio>
+        <button onclick="document.getElementById('audio2').play()">播放</button>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h2>测试3: Web Audio API</h2>
+        <button onclick="testWebAudio()">测试Web Audio</button>
+        <p id="webAudioStatus"></p>
+    </div>
+
+    <script>
+        function testWebAudio() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+
+                const bufferSize = 2 * ctx.sampleRate;
+                const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = ctx.createBufferSource();
+                noise.buffer = noiseBuffer;
+                noise.loop = true;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 400;
+
+                const gainNode = ctx.createGain();
+                gainNode.gain.value = 0.3;
+
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                noise.start();
+
+                document.getElementById('webAudioStatus').textContent = '✅ Web Audio API 工作正常！';
+                document.getElementById('webAudioStatus').style.color = 'green';
+
+                // 5秒后停止
+                setTimeout(() => {
+                    noise.stop();
+                }, 5000);
+            } catch (error) {
+                document.getElementById('webAudioStatus').textContent = '❌ 错误: ' + error.message;
+                document.getElementById('webAudioStatus').style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>

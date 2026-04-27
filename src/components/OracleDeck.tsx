@@ -51,8 +51,6 @@ export default function OracleDeck() {
   const [selectedSound, setSelectedSound] = useState<'fireplace' | 'rain'>('fireplace')
   const [audioLoading, setAudioLoading] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const webAudioContextRef = useRef<AudioContext | null>(null)
-  const noiseNodeRef = useRef<AudioNode | null>(null)
 
   const currentSpread = SPREADS[selectedSpread as keyof typeof SPREADS]
   const canDraw = drawnCards.length < currentSpread.count
@@ -60,180 +58,47 @@ export default function OracleDeck() {
   const hasQuestion = question.trim().length > 0
   const isDeckLocked = !hasQuestion
 
-  // 音效管理
+  // 音效管理 - 简化版
   useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio()
+      audioRef.current.loop = true
+      audioRef.current.volume = 0.3
+    }
+
+    const audio = audioRef.current
+
     if (soundEnabled) {
       setAudioLoading(true)
-      if (!audioRef.current) {
-        audioRef.current = new Audio()
-        audioRef.current.loop = true
-        audioRef.current.volume = 0.3
-      }
 
-      // 根据选择设置音效源（使用可靠的免费MP3音频）
-      if (selectedSound === 'fireplace') {
-        // 使用免费的壁炉声音（MP3格式，广泛支持）
-        audioRef.current.src = 'https://assets.mixkit.co/active_storage/sfx/2414/2414-preview.mp3'
-      } else {
-        // 使用免费的雨声音效（MP3格式）
-        audioRef.current.src = 'https://assets.mixkit.co/active_storage/sfx/1912/1912-preview.mp3'
-      }
+      // 设置音效源
+      const audioUrl = selectedSound === 'fireplace'
+        ? 'https://assets.mixkit.co/active_storage/sfx/2414/2414-preview.mp3'
+        : 'https://assets.mixkit.co/active_storage/sfx/1912/1912-preview.mp3'
 
-      // 音频加载完成后播放
-      const handleCanPlay = () => {
-        setAudioLoading(false)
-        if (audioRef.current && soundEnabled) {
-          audioRef.current.play().catch(err => {
-            console.log('播放失败，尝试Web Audio API:', err)
-            // 如果音频播放失败，使用Web Audio API作为后备
-            startWebAudioFallback()
-          })
-        }
-      }
+      audio.src = audioUrl
 
-      // 音频加载失败处理 - 使用Web Audio API生成环境音
-      const handleError = () => {
-        console.log('外部音频加载失败，使用Web Audio API生成环境音')
-        setAudioLoading(false)
-        startWebAudioFallback()
-      }
-
-      audioRef.current.addEventListener('canplaythrough', handleCanPlay, { once: true })
-      audioRef.current.addEventListener('error', handleError, { once: true })
-
-      // 尝试播放，处理自动播放阻止
-      audioRef.current.load()
-      const playPromise = audioRef.current.play()
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setAudioLoading(false)
-          })
-          .catch((error) => {
-            console.log('Audio autoplay was prevented, trying Web Audio API:', error)
-            setAudioLoading(false)
-            // 使用Web Audio API作为后备
-            startWebAudioFallback()
-          })
-      }
-
-      return () => {
-        if (audioRef.current) {
-          audioRef.current.removeEventListener('canplaythrough', handleCanPlay)
-          audioRef.current.removeEventListener('error', handleError)
-        }
-      }
+      // 播放音频
+      audio.play()
+        .then(() => {
+          console.log('✅ 音频播放成功')
+          setAudioLoading(false)
+        })
+        .catch((err) => {
+          console.log('❌ 音频播放失败:', err)
+          setAudioLoading(false)
+        })
     } else {
+      audio.pause()
       setAudioLoading(false)
-      if (audioRef.current) {
-        audioRef.current.pause()
-      }
-      // 停止Web Audio
-      stopWebAudio()
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
+      if (audio) {
+        audio.pause()
       }
-      stopWebAudio()
     }
   }, [soundEnabled, selectedSound])
-
-  // Web Audio API 后备方案（生成环境音）
-  const startWebAudioFallback = () => {
-    try {
-      if (!webAudioContextRef.current) {
-        webAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
-      }
-
-      const ctx = webAudioContextRef.current
-      if (ctx.state === 'suspended') {
-        ctx.resume()
-      }
-
-      // 创建环境音
-      if (selectedSound === 'fireplace') {
-        // 生成噼啪声（壁炉效果）
-        createFireplaceSound(ctx)
-      } else {
-        // 生成白噪声（雨声效果）
-        createRainSound(ctx)
-      }
-    } catch (error) {
-      console.error('Web Audio API 初始化失败:', error)
-    }
-  }
-
-  const stopWebAudio = () => {
-    if (noiseNodeRef.current) {
-      try {
-        noiseNodeRef.current.disconnect()
-      } catch (e) {
-        // ignore
-      }
-      noiseNodeRef.current = null
-    }
-  }
-
-  const createFireplaceSound = (ctx: AudioContext) => {
-    // 创建噼啪声效果
-    const bufferSize = 2 * ctx.sampleRate
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-    const output = noiseBuffer.getChannelData(0)
-
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1
-      output[i] = (lastOut + (0.02 * white)) / 1.02
-      lastOut = output[i]
-      output[i] *= 3.5
-    }
-
-    const noise = ctx.createBufferSource()
-    noise.buffer = noiseBuffer
-    noise.loop = true
-
-    const gainNode = ctx.createGain()
-    gainNode.gain.value = 0.15
-
-    noise.connect(gainNode)
-    gainNode.connect(ctx.destination)
-    noise.start()
-
-    noiseNodeRef.current = gainNode
-  }
-
-  let lastOut = 0
-
-  const createRainSound = (ctx: AudioContext) => {
-    // 创建雨声白噪声
-    const bufferSize = 2 * ctx.sampleRate
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-    const output = noiseBuffer.getChannelData(0)
-
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1
-    }
-
-    const noise = ctx.createBufferSource()
-    noise.buffer = noiseBuffer
-    noise.loop = true
-
-    // 低通滤波器让声音更柔和
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'lowpass'
-    filter.frequency.value = 400
-
-    const gainNode = ctx.createGain()
-    gainNode.gain.value = 0.3
-
-    noise.connect(filter)
-    filter.connect(gainNode)
-    gainNode.connect(ctx.destination)
-    noise.start()
-
-    noiseNodeRef.current = gainNode
-  }
 
   const shuffleDeck = () => {
     setIsShuffling(true)
