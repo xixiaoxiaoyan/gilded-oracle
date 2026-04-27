@@ -21,7 +21,12 @@
       "Bash(curl -I https://gilded-oracle.vercel.app --max-time 10)",
       "Bash(vercel ls *)",
       "Bash(curl *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(nslookup *)",
+      "Bash(ping *)",
+      "Bash(gh repo *)",
+      "Bash(dig +short *)",
+      "Bash(gh auth *)"
     ]
   }
 }

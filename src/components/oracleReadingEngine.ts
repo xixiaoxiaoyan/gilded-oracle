@@ -1,6 +1,6 @@
 /**
- * 真诚的占卜解读引擎
- * 直接回答问题，不说空话
+ * 严谨的雷诺曼占卜解读引擎
+ * 遵循雷诺曼传统规则：诚实、具体、包含负面信息
  */
 import { lenormandCards } from '@/data/lenormandData'
 
@@ -12,547 +12,564 @@ export const generateOracleReading = (question: string, drawnCards: any[], sprea
    */
   const analyzeQuestion = () => {
     if (!question || question.trim().length === 0) {
-      return "general"
+      return { type: "general", topic: "整体运势" }
     }
 
     const q = question.toLowerCase()
 
-    // 感情问题 - 他/她怎么看
-    if (q.includes('怎么看') && (q.includes('他') || q.includes('她') || q.includes('男朋友') || q.includes('女朋友') || q.includes('老公') || q.includes('老婆'))) {
-      return "how_they_see_me"
+    if (q.includes('怎么') && q.includes('看') && (q.includes('他') || q.includes('她') || q.includes('男朋友') || q.includes('女朋友') || q.includes('老公') || q.includes('老婆'))) {
+      return { type: "perception", topic: "对方如何看待你" }
     }
 
-    // 感情问题 - 他/她爱我吗
-    if (q.includes('爱') || q.includes('喜欢') || q.includes('感情')) {
-      return "love_feelings"
+    if (q.includes('爱') || q.includes('喜欢') || q.includes('感情') || q.includes('感觉')) {
+      return { type: "feelings", topic: "感情状态" }
     }
 
-    // 感情问题 - 会在一起吗
-    if (q.includes('在一起') || q.includes('结婚') || q.includes('未来')) {
-      return "relationship_future"
+    if (q.includes('在一起') || q.includes('结婚') || q.includes('未来') || q.includes('结果')) {
+      return { type: "relationship_outcome", topic: "关系发展" }
     }
 
-    // 工作问题
     if (q.includes('工作') || q.includes('事业') || q.includes('升职') || q.includes('辞职') || q.includes('offer')) {
-      return "career"
+      return { type: "career", topic: "事业发展" }
     }
 
-    // 选择问题
     if (q.includes('选择') || q.includes('决定') || q.includes('要不要') || q.includes('如何')) {
-      return "decision"
+      return { type: "decision", topic: "选择决定" }
     }
 
-    return "general"
+    if (q.includes('什么时候') || q.includes('何时') || q.includes('时间')) {
+      return { type: "timing", topic: "时间预测" }
+    }
+
+    return { type: "general", topic: "整体运势" }
   }
 
   /**
-   * 具体的牌意解读 - 直接回答问题
+   * 单张牌的完整解读（正面+负面）
    */
-  const getConcreteAnswer = (questionType: string, cards: any[]) => {
-    const mainCard = cards[0]
-    const cardName = mainCard.name
-    const keyword = mainCard.keywords[0]
-
-    const concreteAnswers: { [key: string]: { [questionType: string]: string } } = {
+  const getSingleCardReading = (card: any, position: string = "general") => {
+    const readings: { [key: string]: any } = {
+      // 骑士 - 编号1
       '骑士': {
-        'how_they_see_me': '对方认为你是个有魅力、值得追求的人。但也在观察你——你是否有长期的吸引力。骑士代表行动和接近，说明对方有主动的意愿。',
-        'love_feelings': '对方对你有好感，并且正在考虑采取行动。这不是被动的感觉，而是想要接近你的冲动。',
-        'relationship_future': '关系会向前发展。如果你想知道"会不会在一起"，答案是会的，但需要有人主动迈出那一步。',
-        'career': '工作中会有好消息传来，可能是offer、晋升机会或者重要的项目。机会正在接近你。',
-        'decision': '答案是肯定的。行动比等待更重要。不要过度思考，先迈出第一步。',
-        'general': '有些事情正在接近你。保持开放的心态，机会会来。'
+        positive: "好消息即将到来，可能是有利的消息、新的机会或重要人物的到来",
+        negative: "消息可能来得快去得也快，或者消息不如预期。对方可能只是短暂兴趣，并非真心",
+        timing: "1天、1周或1个月内",
+        keywords: ["速度", "消息", "年轻男性"]
       },
+      // 幸运草 - 编号2
       '幸运草': {
-        'how_they_see_me': '对方觉得你是个轻松愉快的人，和你在一起很开心。你给TA带来好心情，这是你的优势。',
-        'love_feelings': '对方对你有很不错的印象，觉得和你在一起很幸运。感情基础是轻松愉快的。',
-        'relationship_future': '关系发展会很顺利，小确幸很多。不要期待轰轰烈烈，平平淡淡才是真。',
-        'career': '工作上会有一些小的好运，比如遇到好同事、好项目。抓住这些小的机会。',
-        'decision': '两个选择都不错，选择让你更开心的那个。不要太纠结，结果都不会太差。',
-        'general': '幸运正在靠近你，保持乐观的心态。'
+        positive: "好运和小确幸，机会出现但需要及时把握",
+        negative: "运气短暂，机会稍纵即逝。不要期望太大的幸运，这只是小的好转",
+        timing: "2天、2周或2个月内",
+        keywords: ["幸运", "短暂", "小确幸"]
       },
+      // 船 - 编号3
       '船': {
-        'how_they_see_me': '对方认为你是个有想法、愿意探索的人。但也可能觉得你不够稳定，或者让TA捉摸不定。',
-        'love_feelings': '对方对你有好奇心，想要了解你更多。但也可能有些距离感，不够深入。',
-        'relationship_future': '关系会有变化和发展。可能是好的变化，比如关系进入新阶段；也可能是需要面对距离或变化。',
-        'career': '工作上会有变动或旅行相关的机会。可能需要出差、调动，或者换个环境。',
-        'decision': '选择那个能让你成长的方向，即使它看起来更冒险。留在舒适区不是答案。',
-        'general': '你即将踏上一段新的旅程，做好准备。'
+        positive: "即将有变化或远行，可能涉及出差、搬家或新的探索",
+        negative: "可能面临分离、远离，或者关系中的一方要离开。船也可能代表逃避现实",
+        timing: "3天、3周或3个月内",
+        keywords: ["旅行", "探索", "分离"]
       },
+      // 房子 - 编号4
       '房子': {
-        'how_they_see_me': '对方认为你是个靠谱、稳定的人。你给TA安全感，这是长期关系的重要基础。',
-        'love_feelings': '对方把你当作家人一样看待，感情很稳定。即使不激烈，但很踏实。',
-        'relationship_future': '关系会走向稳定。如果要考虑同居、结婚，现在是合适的时机。',
-        'career': '工作中寻找稳定的发展机会。不要频繁跳槽，在一个地方深耕会更好。',
-        'decision': '选择更稳定的那个选项。现在不是冒险的时候，安全感更重要。',
-        'general': '关注你的根基和家庭，它们给你力量。'
+        positive: "稳定的家庭基础，安全感和归属感。可能涉及房产或家庭事务",
+        negative: "可能被困在舒适区，或者家庭矛盾带来压力。房子也可能代表封闭、不与外界接触",
+        timing: "4天、4周或4个月内",
+        keywords: ["稳定", "家庭", "封闭"]
       },
+      // 树 - 编号5
       '树': {
-        'how_they_see_me': '对方认为你是个稳重、可靠的人。但也可能觉得你不够灵活，或者太固执。',
-        'love_feelings': '对方的感情是长期培养的，不是一见钟情。但正因为如此，感情很稳固。',
-        'relationship_future': '关系会慢慢成长，需要时间。不要着急，好的感情需要慢慢培养。',
-        'career': '工作中需要耐心。你现在做的事情是在为未来打基础，坚持下去会有收获。',
-        'decision': '选择长期来看更好的那个选项，不要只看眼前的利益。',
-        'general': '你的根基很重要，健康和稳定是关键。'
+        positive: "健康、成长和长期稳定。根基牢固，利于长期发展",
+        negative: "健康问题或成长停滞。也可能代表固守旧模式，拒绝改变",
+        timing: "5天、5周或5个月内",
+        keywords: ["健康", "成长", "固守"]
       },
+      // 云 - 编号6
       '云': {
-        'how_they_see_me': '对方对你的看法不太清晰，或者说TA自己也很困惑。可能TA还没有想清楚对你的感觉。',
-        'love_feelings': '对方的心情很矛盾，不清楚自己到底想要什么。给TA一些时间想清楚。',
-        'relationship_future': '关系的未来现在还不明朗。可能需要等待一些事情澄清，或者需要坦诚的沟通。',
-        'career': '工作中现在看不清方向。不要做重大决定，等等再说。迷雾中的决定往往会后悔。',
-        'decision': '现在不是做决定的好时机。信息不够，先等等，过段时间再说。',
-        'general': '现在情况不清晰，保持耐心。'
+        positive: "困惑是暂时的，迷雾会散去。这个不确定的时期会过去",
+        negative: "现在的情况非常不清晰，你可能在自欺欺人。不是做决定的好时机，容易出错",
+        timing: "6天、6周或6个月内",
+        keywords: ["困惑", "不确定", "迷雾"]
       },
+      // 蛇 - 编号7
       '蛇': {
-        'how_they_see_me': '对方可能对你有些复杂的感觉，既有吸引力又有戒心。或者TA觉得你不够真诚。',
-        'love_feelings': '这份感情可能有一些复杂的因素。可能是三角关系，或者是对方在感情中不够诚实。',
-        'relationship_future': '关系面临挑战。可能是第三者，或者是信任问题。需要认真面对这些问题。',
-        'career': '工作中要小心同事或合作伙伴。不是所有人都希望你成功，保持警惕。',
-        'decision': '仔细考虑所有选项，不要被表面现象迷惑。相信你的直觉。',
-        'general': '有些事情不像看起来那么简单，保持警觉。'
+        positive: "你有足够的智慧应对复杂局面，能够看穿真相",
+        negative: "警告！可能存在欺骗、背叛或第三者。有人可能在撒谎，或者你在欺骗自己。必须保持警惕",
+        timing: "7天、7周或7个月内",
+        keywords: ["智慧", "欺骗", "背叛"]
       },
+      // 棺材 - 编号8
       '棺材': {
-        'how_they_see_me': '对方可能认为你们的关系已经结束了，或者已经没有新的可能性了。这是个艰难的事实。',
-        'love_feelings': '对方的感情可能已经冷淡了，或者TA已经决定放下。这不是你愿意听到的，但需要面对。',
-        'relationship_future': '关系可能需要结束，或者进入一个全新的阶段。旧的相处模式已经不行了。',
-        'career': '工作中某个项目或阶段需要结束。不要死守着不放，接受结束才能开始新的。',
-        'decision': '可能需要放弃某个选择。这很痛苦，但如果已经不行了，放手可能是最好的选择。',
-        'general': '某些事情需要结束，接受这个事实。'
+        positive: "某些事情必须结束，才能有新的开始。放下是必要的",
+        negative: "明确的结束信号。关系、项目或阶段的终止。这不是暂时困难，是真的结束了",
+        timing: "8天、8周或8个月内",
+        keywords: ["结束", "死亡", "终止"]
       },
+      // 花束 - 编号9
       '花束': {
-        'how_they_see_me': '对方认为你很迷人，值得被欣赏。你在TA眼中是美好的，有吸引力的。',
-        'love_feelings': '对方对你很有好感，可能已经被你吸引了。这是积极的信号。',
-        'relationship_future': '关系会很美好。如果你们在一起，会是别人羡慕的那种感情。',
-        'career': '工作上会有好事发生，比如升职、加薪、或者被认可。你的努力会被看到。',
-        'decision': '选择那个让你感觉更好的选项。你的直觉在告诉你正确的方向。',
-        'general': '好事正在发生，保持自信。'
+        positive: "美好的事物即将到来，可能是礼物、赞美或愉快的社交",
+        negative: "表面的美好，可能只是虚荣或短暂的快乐。不要被外表迷惑",
+        timing: "9天、9周或9个月内",
+        keywords: ["礼物", "赞美", "表面"]
       },
+      // 镰刀 - 编号10
       '镰刀': {
-        'how_they_see_me': '对方可能觉得你需要做出改变，或者你们的关系需要被"修剪"。有些东西需要被切断。',
-        'love_feelings': '对方可能正在考虑结束什么，或者改变现状。这可能是关系，也可能是某种相处模式。',
-        'relationship_future': '关系面临重要决定。可能需要分手，或者做出重大改变。不能继续这样下去了。',
-        'career': '工作中需要做出决定，可能是辞职、结束项目。拖延只会让情况更糟。',
-        'decision': '必须做出决定了。不要再犹豫，割舍虽然痛，但必须做。',
-        'general': '是时候做出艰难的决定了。'
+        positive: "需要做出果断决定，或收获之前的努力成果",
+        negative: "突然的切断或意外损失。有些事情会被强制结束，可能很痛",
+        timing: "10天、10周或10个月内",
+        keywords: ["切断", "决定", "意外"]
       },
+      // 鞭子 - 编号11
       '鞭子': {
-        'how_they_see_me': '对方和你的关系中有冲突。可能经常争吵，或者有未解决的矛盾。这让TA感到疲惫。',
-        'love_feelings': '对方的感情很矛盾。可能有爱，但也有不满和抱怨。关系不够和谐。',
-        'relationship_future': '关系会有冲突。如果你们不能好好沟通，关系会很累。需要学会好好说话。',
-        'career': '工作中人际关系紧张。可能有冲突的同事或老板。学会处理冲突很重要。',
-        'decision': '选择那个能减少冲突的选项。不要选择会让你持续痛苦的路。',
-        'general': '有些冲突需要被解决，不要逃避。'
+        positive: "通过努力和反复练习可以提升，或者冲突可以通过沟通解决",
+        negative: "持续的冲突、争吵或折磨。关系可能存在暴力或虐待倾向",
+        timing: "11天、11周或11个月内",
+        keywords: ["冲突", "重复", "折磨"]
       },
+      // 鸟 - 编号12
       '鸟': {
-        'how_they_see_me': '对方觉得你是个健谈、有趣的人。但可能也觉得你话太多，或者不够深入。',
-        'love_feelings': '对方想和你沟通，想多了解你。沟通是你们关系的关键。',
-        'relationship_future': '关系的发展需要好的沟通。多说说心里话，不要藏着掖着。',
-        'career': '工作中要多沟通，多表达自己。机会来自于你和人的交流。',
-        'decision': '找信任的人聊聊，他们的建议会帮你理清思路。',
-        'general': '沟通很重要，把话说出来。'
+        positive: "重要的沟通、对话或好消息。可能有两件事同时发生",
+        negative: "沟通不畅、八卦或焦虑。可能有两人同时在说闲话",
+        timing: "12天、12周或12个月内",
+        keywords: ["沟通", "对话", "八卦"]
       },
+      // 小孩 - 编号13
       '小孩': {
-        'how_they_see_me': '对方认为你单纯、可爱，像个孩子一样。这可能让TA想要保护你，但也可能觉得你不成熟。',
-        'love_feelings': '对方对你有纯真的好感。这份感情很单纯，没有太多杂念。',
-        'relationship_future': '关系会重新开始，或者进入一个新的阶段。过去的包袱可以放下了。',
-        'career': '工作中会有新的开始，新项目、新机会。用新的眼光去迎接。',
-        'decision': '像个新人一样去思考，不要被过去的经验束缚。',
-        'general': '新的开始正在到来，保持开放。'
+        positive: "新的开始、纯真的快乐或新的可能性",
+        negative: "不成熟、幼稚的行为或缺乏经验。新事物可能需要很长时间才能成长",
+        timing: "13天、13周或13个月内",
+        keywords: ["新开始", "不成熟", "纯真"]
       },
+      // 狐狸 - 编号14
       '狐狸': {
-        'how_they_see_me': '对方可能觉得你不够真诚，或者你在耍心机。信任是问题所在。',
-        'love_feelings': '对方在怀疑你的真实想法，或者不信任你的感情。信任需要重建。',
-        'relationship_future': '关系面临信任危机。如果不诚实面对，关系很难维持。',
-        'career': '工作中要小心，不是所有人都值得信任。保护好自己。',
-        'decision': '不要被表面的好处迷惑。仔细思考每个选项的真实情况。',
-        'general': '保持警惕，事情可能不像看起来那样。'
+        positive: "你有足够的智慧处理复杂情况，需要策略和谨慎",
+        negative: "有人在欺骗你，或者你在自欺欺人。工作中可能有问题，保持警惕",
+        timing: "14天、14周或14个月内",
+        keywords: ["策略", "欺骗", "工作"]
       },
+      // 熊 - 编号15
       '熊': {
-        'how_they_see_me': '对方认为你有能力、有力量。但也可能觉得你太强势，或者让人有压力。',
-        'love_feelings': '对方很重视你，可能有些依赖你。你在TA生活中有重要的位置。',
-        'relationship_future': '关系会稳定发展。你是被依靠的那一方，但也不要让自己太累。',
-        'career': '工作中你有能力，也有资源。好好利用它们，你可以取得成就。',
-        'decision': '选择能让你发挥力量的选项。你有能力承担选择的后果。',
-        'general': '你有力量，相信自己。'
+        positive: "有力量或资源支持你，可能是权威人物的庇护",
+        negative: "可能被压制或控制。权威人物可能带来压力，需要保持距离保护自己",
+        timing: "15天、15周或15个月内",
+        keywords: ["力量", "权威", "压制"]
       },
+      // 星星 - 编号16
       '星星': {
-        'how_they_see_me': '对方认为你有闪光点，你让TA对未来有希望。你是TA生活中的星光。',
-        'love_feelings': '对方对你抱有希望，把你当作梦想或理想。这份感情很浪漫。',
-        'relationship_future': '关系有希望发展得很好。保持对未来的信念，不要因为现在的问题放弃。',
-        'career': '工作上保持希望和信念。你现在做的事情有长远的价值。',
-        'decision': '选择那个让你对未来有希望的方向。相信你的梦想。',
-        'general': '希望和梦想在指引你，相信它们。'
+        positive: "希望、梦想和指引。虽然现在不明亮，但星光在指引方向",
+        negative: "梦想可能过于遥远或不切实际。不要只看星星，也要看脚下的路",
+        timing: "16天、16周或16个月内",
+        keywords: ["希望", "梦想", "遥远"]
       },
+      // 鹳鸟 - 编号17
       '鹳鸟': {
-        'how_they_see_me': '对方认为你是个在成长的人。TA看到了你的变化，这些变化是积极的。',
-        'love_feelings': '对方的感情在积极发展。你们的关系正在往好的方向变化。',
-        'relationship_future': '关系会有积极的变化。可能是关系升级，或者相处模式改善。',
-        'career': '工作上会有好的变化。升职、转岗、或者新的机会都在靠近。',
-        'decision': '选择能带来积极改变的那个选项。不要害怕变化。',
-        'general': '好的变化正在发生，迎接它。'
+        positive: "积极的改变、回归或改善。事情会向好的方向发展",
+        negative: "改变可能让你不安，或者你不愿意离开舒适区。成长需要勇气",
+        timing: "17天、17周或17个月内",
+        keywords: ["改变", "回归", "成长"]
       },
+      // 狗 - 编号18
       '狗': {
-        'how_they_see_me': '对方认为你是个忠诚的朋友。你给TA可靠的感觉，信任是你们的基础。',
-        'love_feelings': '对方对你有深厚的感情，这种感情建立在信任之上。你是TA可以依靠的人。',
-        'relationship_future': '关系会稳定发展。忠诚和信任是你们关系的基石。',
-        'career': '工作中找到可靠的伙伴和盟友。合作会让你事半功倍。',
-        'decision': '选择那个更值得信任的选项。可靠性很重要。',
-        'general': '信任和忠诚很重要，珍惜它们。'
+        positive: "忠诚的朋友、可靠的伙伴或信任的关系",
+        negative: "可能被朋友背叛，或者你过于依赖他人。盲目的忠诚是危险的",
+        timing: "18天、18周或18个月内",
+        keywords: ["忠诚", "友谊", "依赖"]
       },
+      // 塔 - 编号19
       '塔': {
-        'how_they_see_me': '对方可能觉得你太正式、太有距离感。或者你在TA心中是个权威人物，不是平等的伙伴。',
-        'love_feelings': '对方的感情很正式，不够亲密。你们之间可能有等级或身份的隔阂。',
-        'relationship_future': '关系可能受到外界因素的限制，比如家庭、社会的压力。需要突破这些障碍。',
-        'career': '工作中要遵守规则和制度。不要试图打破规则，那样只会让你受挫。',
-        'decision': '选择那个更规范的选项。不要试图走捷径，按规矩来。',
-        'general': '尊重规则和制度，它们有存在的道理。'
+        positive: "权威机构或官方事务可能对你有利，或者你需要独处时间",
+        negative: "可能被孤立、排斥或受到官方压力。你感到孤独无助",
+        timing: "19天、19周或19个月内",
+        keywords: ["权威", "孤立", "官方"]
       },
+      // 花园 - 编号20
       '花园': {
-        'how_they_see_me': '对方认为你是个社交能力强的人，在人面前很得体。你给TA留下好印象。',
-        'love_feelings': '对方很想把你介绍给TA的朋友和家人。这是好信号，说明TA重视你。',
-        'relationship_future': '关系会公开化、社会化。可能会见父母、朋友，或者在社交场合正式亮相。',
-        'career': '工作中多参与社交活动，多和人接触。机会来自于人际网络。',
-        'decision': '选择那个能让更多人参与和了解的选项。不要一个人扛。',
-        'general': '走出去，和人连接，这会给你带来机会。'
+        positive: "社交活动、公众认可或在公开场合露面的机会",
+        negative: "可能被公众批评或隐私被侵犯。不是所有人都真心对你",
+        timing: "20天、20周或20个月内",
+        keywords: ["社交", "公众", "公开"]
       },
+      // 山 - 编号21
       '山': {
-        'how_they_see_me': '对方觉得你很难接近，或者你们之间有明显的障碍。这让TA感到无力。',
-        'love_feelings': '对方想要接近你，但感觉有障碍。可能是距离、家庭、或其他实际问题。',
-        'relationship_future': '关系面临实际障碍。这些障碍不是不可克服，但需要努力和耐心。',
-        'career': '工作中遇到困难。这不是你不够好，而是客观的困难。一步一步来。',
-        'decision': '如果两个选择都很难，选择那个你更愿意为之努力的。',
-        'general': '障碍是真实的，但你可以克服它。'
+        positive: "虽然有障碍，但通过坚持和努力可以克服",
+        negative: "巨大的障碍，可能无法克服。需要考虑是否值得继续坚持",
+        timing: "21天、21周或21个月内",
+        keywords: ["障碍", "困难", "延迟"]
       },
+      // 路 - 编号22
       '路': {
-        'how_they_see_me': '对方认为你有很多可能性，但也觉得你不够确定，不知道你想要什么。',
-        'love_feelings': '对方对你有很多想象和期待，但还不确定真实的你是怎样的。',
-        'relationship_future': '关系面临选择。有很多可能性，但需要做出选择才能前进。',
-        'career': '工作中有很多选项。这看起来是好事，但也可能让你困惑。',
-        'decision': '你确实需要做选择。不要因为选项多就推迟决定。',
-        'general': '你在十字路口，选择方向才能前进。'
+        positive: "有选择的余地，新的路径和可能性",
+        negative: "可能迷失方向，或者面临艰难的选择。选择太多也会让人困惑",
+        timing: "22天、22周或22个月内",
+        keywords: ["选择", "岔路", "方向"]
       },
+      // 老鼠 - 编号23
       '老鼠': {
-        'how_they_see_me': '对方觉得你们的关系在慢慢恶化，或者有些小问题在累积。不是大事，但让人不舒服。',
-        'love_feelings': '对方的感情在慢慢流失。不是因为一次大的事件，而是很多小事的累积。',
-        'relationship_future': '关系面临慢性损耗。如果不及时处理，小问题会变成大问题。',
-        'career': '工作中有很多小的损耗和问题。及时处理它们，不要累积。',
-        'decision': '选择问题更少的那条路。不要选择那些会持续消耗你的。',
-        'general': '小问题要及时处理，不要拖延。'
+        positive: "小问题可以及时处理，防止恶化",
+        negative: "逐渐的损失和侵蚀，小问题会累积成大灾难。需要立即行动",
+        timing: "23天、23周或23个月内",
+        keywords: ["损失", "侵蚀", "担忧"]
       },
+      // 心 - 编号24
       '心': {
-        'how_they_see_me': '对方认为你是个有爱心、情感丰富的人。你在TA心中是特别的。',
-        'love_feelings': '对方真的爱你。这份感情是真实的，不是游戏。',
-        'relationship_future': '关系充满爱。如果你们都愿意投入，这会是一段很美好的感情。',
-        'career': '做你真心热爱的工作。激情会带给你成就感。',
-        'decision': '选择那个你真心想要的，而不是别人觉得你应该选的。',
-        'general': '跟着你的心走，它会指引你。'
+        positive: "爱情、热情和情感满足。感情关系美好",
+        negative: "心碎、情感冷漠或关系出现问题。可能需要面对情感创伤",
+        timing: "24天、24周或24个月内",
+        keywords: ["爱情", "情感", "心碎"]
       },
+      // 戒指 - 编号25
       '戒指': {
-        'how_they_see_me': '对方把你当作承诺的对象。在TA心中，你们之间有某种约定或责任。',
-        'love_feelings': '对方对你的感情很认真。这不是玩玩而已，而是有承诺的。',
-        'relationship_future': '关系会走向承诺。可能是订婚、结婚，或者其他形式的严肃承诺。',
-        'career': '工作中遵守承诺和契约。你的信誉很重要。',
-        'decision': '选择那个你愿意长期承诺的。不要选择你知道不会坚持的。',
-        'general': '承诺很重要，认真对待它。'
+        positive: "承诺、契约或正式的协议。关系进入稳定阶段",
+        negative: "契约可能破裂，关系可能结束。承诺被打破是痛苦的",
+        timing: "25天、25周或25个月内",
+        keywords: ["承诺", "契约", "束缚"]
       },
+      // 书 - 编号26
       '书': {
-        'how_they_see_me': '对方觉得你很神秘，还有很多不了解的地方。这让你有吸引力，但也让TA不安。',
-        'love_feelings': '对方想要了解你更多。你有吸引力，但TA感觉还有很多不知道的。',
-        'relationship_future': '关系中还有许多未被发现的层面。多分享，多了解。',
-        'career': '工作中继续学习。你的知识和技能是你的资产。',
-        'decision': '在决定之前先了解更多。收集信息再做选择。',
-        'general': '保持学习，知识会给你力量。'
+        positive: "知识、学习或隐藏的信息即将被揭示",
+        negative: "秘密被隐瞒，或者你不知道全部真相。有些事情你无法得知",
+        timing: "26天、26周或26个月内",
+        keywords: ["秘密", "知识", "隐瞒"]
       },
+      // 信 - 编号27
       '信': {
-        'how_they_see_me': '对方认为你们需要更好的沟通，或者有些话需要说出来。',
-        'love_feelings': '对方想和你多交流。文字、语言对你们的关系很重要。',
-        'relationship_future': '关系的发展需要沟通。不要把话藏在心里，坦诚交流。',
-        'career': '工作中要注意书面沟通。邮件、报告、文档都很重要。',
-        'decision': '把你的想法写下来。书写会让思路清晰。',
-        'general': '沟通很重要，把话说出来。'
+        positive: "重要的书面文件、合同或信息。正式的沟通",
+        negative: "文件可能有问题，信息可能错误。仔细检查所有文件",
+        timing: "27天、27周或27个月内",
+        keywords: ["文件", "信息", "书面"]
       },
+      // 男人 - 编号28
       '男人': {
-        'how_they_see_me': '如果是男性问感情，这张牌代表对方看到的是一个平等的对象。你们的关系更像伙伴。',
-        'love_feelings': '如果是女性问感情，对方把你当作重要的男人看待。你是TA生活中的重要男性。',
-        'relationship_future': '关系中男性的能量在主导。如果对方是男性，他的态度会决定关系走向。',
-        'career': '工作中男性角色或权威人物很重要。他们的看法会影响你的发展。',
-        'decision': '考虑重要男性人物的意见。父亲、伴侣、上司的建议值得参考。',
-        'general': '男性力量在影响你的处境。'
+        positive: "男性角色（如果你是女性，代表重要男性；如果是男性，代表你自己）表现积极",
+        negative: "男性角色带来问题或压力。如果代表你，说明你现在状态不佳",
+        timing: "28天、28周或28个月内",
+        keywords: ["男性", "当事人", "理性"]
       },
+      // 女人 - 编号29
       '女人': {
-        'how_they_see_me': '如果是女性问感情，这张牌代表对方看到的是一个平等的对象。你们的关系更像伙伴。',
-        'love_feelings': '如果是男性问感情，对方把你当作重要的女性看待。你是TA生活中的重要女性。',
-        'relationship_future': '关系中女性的能量在主导。如果对方是女性，她的态度会决定关系走向。',
-        'career': '工作中女性角色或权威人物很重要。她们的看法会影响你的发展。',
-        'decision': '考虑重要女性人物的意见。母亲、伴侣、女上司的建议值得参考。',
-        'general': '女性力量在影响你的处境。'
+        positive: "女性角色（如果你是男性，代表重要女性；如果是女性，代表你自己）表现积极",
+        negative: "女性角色带来问题或压力。如果代表你，说明你现在状态不佳",
+        timing: "29天、29周或29个月内",
+        keywords: ["女性", "当事人", "感性"]
       },
+      // 百合 - 编号30
       '百合': {
-        'how_they_see_me': '对方认为你是个成熟、稳重的人。你和你的相处是和谐的，没有太多戏剧性。',
-        'love_feelings': '对方的感情很成熟稳定。这不是轰轰烈烈的激情，而是细水长流的深情。',
-        'relationship_future': '关系会很和谐稳定。你们能够平衡彼此，这是长期关系的基础。',
-        'career': '工作中追求稳定和谐。不要频繁变动，在一个地方慢慢成长。',
-        'decision': '选择更平衡、更和谐的那个选项。稳定比冒险更重要。',
-        'general': '追求和谐与平衡，这是成熟的智慧。'
+        positive: "和谐、成熟和和平。关系稳定发展",
+        negative: "可能过于平淡，缺乏激情。或者和谐只是表面的，问题被掩盖",
+        timing: "30天、30周或30个月内",
+        keywords: ["和谐", "成熟", "平淡"]
       },
+      // 太阳 - 编号31
       '太阳': {
-        'how_they_see_me': '对方认为你很棒，你是TA生活中的阳光。你在TA心中是积极的、正面的。',
-        'love_feelings': '对方真的很爱你，而且是很阳光、很轻松的那种爱。和TA在一起你会很快乐。',
-        'relationship_future': '关系会非常美好。这是最好的牌之一，预示着幸福和成功。',
-        'career': '工作上会有大成功。升职、加薪、好评，好事会连连。',
-        'decision': '答案是肯定的。你可以放心向前，不会有错。',
-        'general': '最好的牌，一切都会很好。'
+        positive: "巨大的成功、幸福和能量。最积极的牌，一切都会好起来",
+        negative: "即使是最积极的牌也可能有负面：成功可能让你骄傲，或者需要长时间等待阳光",
+        timing: "31天、31周或31个月内",
+        keywords: ["成功", "幸福", "能量"]
       },
+      // 月亮 - 编号32
       '月亮': {
-        'how_they_see_me': '对方对你的感觉更多是情感上的，而非理性的。你在TA心中激发了很多情绪。',
-        'love_feelings': '对方对你的感情很深，可能是爱，也可能是其他强烈的情绪。情感很丰富。',
-        'relationship_future': '关系充满情感波动。可能很浪漫，但也可能情绪化。需要学会管理情绪。',
-        'career': '工作上跟着直觉走。你的第六感可能比逻辑更准确。',
-        'decision': '用情感做决定，而不是只看利弊。问自己真心想要什么。',
-        'general': '相信你的直觉和感受，它们在告诉你重要的东西。'
+        positive: "直觉、情感认可或公众关注。你的感受是真实的",
+        negative: "情绪不稳定，可能有不真实的感觉。公众关注也可能是负面的",
+        timing: "32天、32周或32个月内",
+        keywords: ["直觉", "情感", "情绪"]
       },
+      // 钥匙 - 编号33
       '钥匙': {
-        'how_they_see_me': '对方认为你就是答案。你在TA心中是重要的，可能比你自己意识到的还要重要。',
-        'love_feelings': '对方真的认为你就是TA要找的人。你是关键，这很确定。',
-        'relationship_future': '关系会发展得很好。你们找到了彼此，这是正确的相遇。',
-        'career': '工作中你会找到解决问题的方法。答案比你想象的更近。',
-        'decision': '你已经知道答案了。相信你的判断，不要怀疑。',
-        'general': '答案已经存在，找到它。'
+        positive: "找到解决方案，关键所在。问题是可解的",
+        negative: "可能找不到关键，或者解决方案带来新的问题。钥匙也可能代表被锁住",
+        timing: "33天、33周或33个月内",
+        keywords: ["解决方案", "关键", "开启"]
       },
+      // 鱼 - 编号34
       '鱼': {
-        'how_they_see_me': '对方认为你很丰富，有很多内涵。但也可能觉得你让人捉摸不透，不够直接。',
-        'love_feelings': '对方对你的感情很深，像深海一样丰富。但也可能因此感到不安。',
-        'relationship_future': '关系会有丰富的情感体验。不是简单的爱恨，而是复杂的情感深度。',
-        'career': '工作上财务状况会改善。可能有收入增加、投资回报等。',
-        'decision': '选择那个能带来更多丰富性的选项。不要选择单调的路。',
-        'general': '丰富和深度是你的优势，发挥它们。'
+        positive: "财务丰富、商业机会或情感深度",
+        negative: "财务可能流失，或者感情过于复杂。鱼也代表无法把握的东西",
+        timing: "34天、34周或34个月内",
+        keywords: ["财富", "丰富", "流动"]
       },
+      // 锚 - 编号35
       '锚': {
-        'how_they_see_me': '对方认为你很稳定，是你给了TA安全感。你是TA可以停靠的港湾。',
-        'love_feelings': '对方真的依赖你，你是TA的锚。这份感情很稳定，虽然可能不够浪漫。',
-        'relationship_future': '关系会很稳定。你们会成为彼此的依靠，这是长期关系的基础。',
-        'career': '工作上寻找稳定的位置。不要频繁变动，稳定发展会更好。',
-        'decision': '选择更稳定的那条路。现在不是冒险的时候。',
-        'general': '稳定是你的优势，好好利用它。'
+        positive: "稳定、安全和坚持。你有坚实的基础",
+        negative: "可能被困住，无法移动。过度追求稳定会让你错过机会",
+        timing: "35天、35周或35个月内",
+        keywords: ["稳定", "固定", "被困"]
       },
+      // 十字架 - 编号36
       '十字架': {
-        'how_they_see_me': '对方可能觉得你是个负担，或者你们的关系让TA感到沉重。',
-        'love_feelings': '对方的感情很复杂，有爱但也有负担。这份感情让TA感到沉重。',
-        'relationship_future': '关系需要承担责任。这不是轻松的感情，需要你们共同承担。',
-        'career': '工作中你有责任在身。这些责任可能让你感到沉重，但必须承担。',
-        'decision': '选择那个你愿意承担责任的路。逃避责任不是办法。',
-        'general': '有些责任必须承担，这是成长的一部分。'
+        positive: "承担责任会带来成长，考验会让你更强大",
+        negative: "沉重的负担和责任。你可能被压垮，需要考虑是否值得",
+        timing: "36天、36周或36个月内（或一年内）",
+        keywords: ["负担", "责任", "牺牲"]
       }
     }
 
-    return concreteAnswers[cardName]?.[questionType] || `这张牌${cardName}在提示您关注${keyword}这个主题。结合您的问题，牌面建议您关注这个生命面向。`
+    return readings[card.name] || {
+      positive: `${card.name}带来积极的变化`,
+      negative: `${card.name}也可能带来挑战`,
+      timing: `${card.id}天、${card.id}周或${card.id}个月内`,
+      keywords: card.keywords
+    }
   }
 
   /**
-   * 【当下】直接回答您的问题
+   * 牌的组合解读（雷诺曼的核心）
    */
-  const readCurrentSituation = () => {
-    const questionType = analyzeQuestion()
-    const concreteAnswer = getConcreteAnswer(questionType, cards)
+  const getCombinationReading = (card1: any, card2: any) => {
+    const combinations: { [key: string]: string } = {
+      // 骑士的组合
+      '骑士-船': '快速离开或远行的消息。某人即将离开，或者有远方来的消息',
+      '骑士-房子': '消息回到家中，或者关于家庭的消息',
+      '骑士-心': '爱情的到来，或者感情方面的好消息',
+      '骑士-戒指': '承诺的消息，或者关于关系的正式通知',
+      '骑士-云': '令人困惑的消息，或者消息不明确',
+      '骑士-蛇': '虚假的消息，或者有人在撒谎',
+      '骑士-棺材': '坏消息，或者关于结束的消息',
 
-    let reading = ""
+      // 船的组合
+      '船-房子': '离家，或者搬到外地',
+      '船-心': '远距离恋情，或者感情上的旅行',
+      '船-戒指': '异地关系的承诺',
+      '船-云': '旅行计划不明确，或者对未来的困惑',
 
-    if (spreadType === 'single') {
-      const card = cards[0]
+      // 房子的组合
+      '房子-树': '家庭健康，或者稳固的家庭根基',
+      '房子-心': '家庭幸福，或者在家中找到爱',
+      '房子-戒指': '家庭承诺，或者婚姻',
+      '房子-云': '家庭矛盾，或者家庭问题',
 
-      reading = `您的问题是：${question || '（未提问）'}
+      // 树的组合
+      '树-心': '情感健康，或者爱情对你有益',
+      '树-戒指': '长期的健康关系',
+      '树-云': '健康问题，或者对健康的担忧',
 
-**${card.name}**给出的答案是：
+      // 心的组合
+      '心-戒指': '订婚或结婚，正式的感情承诺',
+      '心-太阳': '幸福的感情，或者爱情成功',
+      '心-月亮': '浪漫的爱情，或者情感认可',
+      '心-十字架': '感情带来痛苦，或者爱是负担',
 
-${concreteAnswer}
+      // 戒指的组合
+      '戒指-太阳': '成功的承诺，或者幸福的婚姻',
+      '戒指-月亮': '感情公开，或者关系被认可',
+      '戒指-十字架': '承诺变成负担，或者关系困难',
 
-这是牌面对您问题的直接回应。如果您的问题更具体，解读也会更精确。`
+      // 棺材的组合
+      '棺材-心': '感情结束，或者心碎',
+      '棺材-戒指': '关系结束，或者契约破裂',
+      '棺材-太阳': '困难时期的结束，或者痛苦的终结',
 
-    } else if (spreadType === 'three') {
-      const [past, present, future] = cards
-      const questionType = analyzeQuestion()
+      // 蛇的组合
+      '蛇-心': '感情欺骗，或者第三者',
+      '蛇-戒指': '不忠的承诺，或者关系中的谎言',
+      '蛇-花园': '在社交场合要小心，或者有人背后说闲话',
 
-      reading = `您的问题是：${question || '（未提问）'}
+      // 云的组合
+      '云-太阳': '困惑即将结束，或者情况会明朗',
+      '云-月亮': '情感困惑，或者情绪不稳定',
+      '云-钥匙': '找不到解决方案，或者关键不清晰',
 
-**【${past.name}】**（过去）- ${getConcreteAnswer(questionType, [past])}
-
-**【${present.name}】**（现在）- ${getConcreteAnswer(questionType, [present])}
-
-**【${future.name}】**（未来）- ${getConcreteAnswer(questionType, [future])}
-
-综合来看：从${past.keywords[0]}的过去，走到${present.keywords[0]}的现在，未来指向${future.keywords[0]}。这是一个连续的过程。`
-
-    } else if (spreadType === 'nine') {
-      const coreCard = cards[4]
-      const outcomeCard = cards[8]
-      const questionType = analyzeQuestion()
-
-      reading = `您的问题是：${question || '（未提问）'}
-
-**核心答案**：**【${coreCard.name}】**是整个解读的中心。${getConcreteAnswer(questionType, [coreCard])}
-
-**结局预示**：**【${outcomeCard.name}】**指向最终结果。${getConcreteAnswer(questionType, [outcomeCard])}
-
-**需要注意的牌**：
-- **【${cards[0].name}】**（现状）：${getConcreteAnswer(questionType, [cards[0]])}
-- **【${cards[1].name}】**（挑战）：${getConcreteAnswer(questionType, [cards[1]])}
-- **【${cards[3].name}】**（近期帮助）：${getConcreteAnswer(questionType, [cards[3]])}
-
-综合建议：关注${coreCard.keywords[0]}这个核心主题，结局会指向${outcomeCard.keywords[0]}。但记住，您的选择会影响最终结果。`
-
+      // 老鼠的组合
+      '老鼠-心': '感情逐渐流失，或者爱情被侵蚀',
+      '老鼠-戒指': '关系逐渐恶化，或者承诺被破坏',
+      '老鼠-鱼': '财务损失，或者金钱被侵蚀',
     }
+
+    const key1 = `${card1.name}-${card2.name}`
+    const key2 = `${card2.name}-${card1.name}`
+
+    return combinations[key1] || combinations[key2] || `${card1.name}和${card2.name}的结合显示了${card1.keywords[0]}和${card2.keywords[0]}的双重影响`
+  }
+
+  /**
+   * 时间预测
+   */
+  const getTimePrediction = (cards: any[], questionType: string) => {
+    if (questionType === 'timing' || cards.some(c => c.id <= 12)) {
+      // 使用前12张牌预测时间
+      const timeCard = cards.find(c => c.id <= 12)
+      if (timeCard) {
+        const reading = getSingleCardReading(timeCard)
+        return `时间预测：**${timeCard.name}**显示事情可能在${reading.timing}发生或完成。`
+      }
+    }
+    return '时间预测：牌面没有明确显示时间框架，可能需要更长时间。'
+  }
+
+  /**
+   * 综合解读
+   */
+  const generateReading = () => {
+    const questionAnalysis = analyzeQuestion()
+    const questionType = questionAnalysis.type
+
+    let reading = `## 关于您的问题：${question || '（未提问）'}
+
+**问题类型**：${questionAnalysis.topic}
+
+---
+
+### 【单张牌解读】
+`
+
+    // 单张牌解读
+    cards.forEach((card, index) => {
+      const cardReading = getSingleCardReading(card)
+      reading += `
+**第${index + 1}张牌 - ${card.name}**（编号${card.id}）
+
+✅ **积极面**：${cardReading.positive}
+
+⚠️ **消极面**：${cardReading.negative}
+
+⏰ **时间**：${cardReading.timing}
+
+📌 **关键词**：${cardReading.keywords.join('、')}
+`
+    })
+
+    // 组合解读
+    if (cards.length >= 2) {
+      reading += `
+
+### 【牌的组合解读】
+
+`
+      for (let i = 0; i < cards.length - 1; i++) {
+        const combination = getCombinationReading(cards[i], cards[i + 1])
+        reading += `**${cards[i].name} + ${cards[i + 1].name}**：${combination}\n\n`
+      }
+    }
+
+    // 综合分析
+    reading += `
+
+### 【综合分析】
+
+`
+
+    // 统计积极和消极牌
+    const positiveCards = cards.filter(c =>
+      ['太阳', '心', '花束', '幸运草', '狗', '钥匙', '星星', '戒指', '百合'].includes(c.name)
+    )
+    const negativeCards = cards.filter(c =>
+      ['棺材', '蛇', '老鼠', '云', '山', '镰刀', '鞭子', '十字架'].includes(c.name)
+    )
+
+    reading += `**牌面统计**：
+- 积极牌：${positiveCards.length}张（${positiveCards.map(c => c.name).join('、') || '无'}）
+- 消极牌：${negativeCards.length}张（${negativeCards.map(c => c.name).join('、') || '无'}）
+
+`
+
+    // 根据问题类型给出核心答案
+    if (questionType === 'perception') {
+      reading += `**核心答案**：
+牌面显示了对方对你的看法。${getSingleCardReading(cards[0]).positive}
+但也要注意：${getSingleCardReading(cards[0]).negative}
+
+**两面的选择**：
+- 如果你继续现在的做法，牌面显示：${getSingleCardReading(cards[cards.length - 1]).positive}
+- 如果改变做法，可能：${getSingleCardReading(cards[1] || cards[0]).negative}
+
+`
+    } else if (questionType === 'relationship_outcome') {
+      reading += `**关系前景**：
+从牌面来看，${getSingleCardReading(cards[0]).positive}
+
+**可能的结局**：
+- 如果继续现在的相处模式：${getSingleCardReading(cards[cards.length - 1]).positive}
+- 但也必须面对：${getSingleCardReading(cards[cards.length - 1]).negative}
+
+**警告**：
+如果牌面中出现${negativeCards.map(c => c.name).join('、')}，这是明确的问题信号。不要忽视它们。
+
+`
+    } else if (questionType === 'feelings') {
+      reading += `**感情状态**：
+${getSingleCardReading(cards[0]).positive}
+
+**真实情况**：
+但也要面对：${getSingleCardReading(cards[0]).negative}
+
+**建议**：
+不要只看表面。${getSingleCardReading(cards[cards.length - 1]).negative}
+
+`
+    } else if (questionType === 'career') {
+      reading += `**工作前景**：
+${getSingleCardReading(cards[0]).positive}
+
+**需要注意**：
+${getSingleCardReading(cards[cards.length - 1]).negative}
+
+**行动建议**：
+${positiveCards.length > negativeCards.length ? '牌面整体积极，可以继续推进' : '牌面有挑战，需要谨慎行事'}
+
+`
+    } else if (questionType === 'decision') {
+      reading += `**选择分析**：
+
+**选项A（继续现状）**：
+- 可能性：${getSingleCardReading(cards[0]).positive}
+- 风险：${getSingleCardReading(cards[0]).negative}
+
+**选项B（做出改变）**：
+- 可能性：${getSingleCardReading(cards[cards.length - 1]).positive}
+- 风险：${getSingleCardReading(cards[cards.length - 1]).negative}
+
+**最终建议**：
+根据牌面，${cards[Math.floor(cards.length / 2)].name}是核心。${getSingleCardReading(cards[Math.floor(cards.length / 2)]).positive}
+
+`
+    } else {
+      reading += `**整体情况**：
+${getSingleCardReading(cards[0]).positive}
+
+**核心挑战**：
+${getSingleCardReading(cards[cards.length - 1]).negative}
+
+**发展方向**：
+${getSingleCardReading(cards[Math.floor(cards.length / 2)]).positive}
+
+`
+    }
+
+    // 时间预测
+    reading += `
+
+### 【时间预测】
+${getTimePrediction(cards, questionType)}
+`
+
+    // 最终结论
+    reading += `
+
+### 【最终结论】
+
+**诚实的话**：
+${negativeCards.length > positiveCards.length ?
+  `牌面显示的挑战多于机会。这不是要打击你，而是让你有心理准备。${negativeCards.map(c => c.name).join('、')}这些牌需要你认真对待。` :
+  `牌面整体相对积极，但不要盲目乐观。${negativeCards.length > 0 ? negativeCards.map(c => c.name).join('、') + '这些牌显示的问题需要面对。' : '仍然要保持清醒和谨慎。'}`}
+
+**你的选择**：
+雷诺曼不会告诉你"必须"做什么，而是告诉你"如果"这样选择会怎样。牌面显示了可能性，不是宿命。最终的决定权在你手中。
+
+**行动建议**：
+- ${positiveCards.length > 0 ? `利用${positiveCards[0].name}代表的${getSingleCardReading(positiveCards[0]).keywords[0]}能量` : '保持耐心和观察'}
+- ${negativeCards.length > 0 ? `谨慎面对${negativeCards[0].name}代表的${getSingleCardReading(negativeCards[0]).keywords[0]}挑战` : '抓住当前的机会'}
+- 在${getSingleCardReading(cards[0]).timing}内观察事态发展
+
+---
+
+*记住：占卜是提供洞察的工具，不是替代思考的捷径。用牌面的信息来辅助你的判断，而不是放弃你的判断。*
+`
 
     return reading
   }
 
-  /**
-   *【挑战】需要面对的具体问题
-   */
-  const readChallenges = () => {
-    const challengeCards = cards.filter(c =>
-      ['云', '蛇', '老鼠', '棺材', '山', '十字架', '鞭子', '狐狸', '狗', '鸟', '镰刀'].includes(c.name)
-    )
-
-    if (challengeCards.length === 0) {
-      return `好消息：牌面中没有明显的挑战牌。
-
-这意味着您的处境相对顺利。如果您仍然感到困惑或不安，这种感受可能来自于：
-- 您自己的过度思考
-- 对未来的不确定性
-- 或者是一些还未显现的内在因素
-
-建议：不要太焦虑。如果有问题，它们会显现的。现在保持平常心就好。`
-    }
-
-    let challengeReading = ""
-
-    challengeCards.forEach(card => {
-      const challenges: { [key: string]: string } = {
-        '云': `**【${card.name}】**- 最大的问题是现在看不清方向。建议：等一等，不要在迷雾中做决定。`,
-        '蛇': `**【${card.name}】**- 要警惕欺骗或不诚实。可能是别人对你不诚实，也可能是你在自欺欺人。建议：相信直觉，感觉不对就保持距离。`,
-        '老鼠': `**【${card.name}】**- 小问题在累积。不是什么大事，但很多小事在消耗你。建议：从最小的问题开始解决，不要拖延。`,
-        '棺材': `**【${card.name}】**- 某些事情需要结束。可能是关系、工作、或某种状态。建议：问问自己，什么是已经该放下的？`,
-        '山': `**【${card.name}】**- 有真实的障碍需要克服。这不是你的问题，是客观困难。建议：评估一下，这座山值得爬吗？如果值得，一步一步来。`,
-        '十字架': `**【${card.name}】**- 你承担的责任太重了。问问自己：这些责任真的是你的吗？建议：学会拒绝，不要什么都扛着。`,
-        '鞭子': `**【${card.name}】**- 有冲突需要解决。可能是和别人的，也可能是自己内心的矛盾。建议：不要逃避，面对它，解决它。`,
-        '狐狸': `**【${card.name}】**- 保持警惕。不是所有人都值得信任。建议：在重要的事情上，多留个心眼。`,
-        '狗': `**【${card.name}】**- 检查一下你的关系。忠诚是相互的吗？建议：如果只有你在付出，这需要重新考虑。`,
-        '鸟': `**【${card.name}】**- 沟通有问题。有些话需要说出来。建议：找个时间，好好把话说清楚。`,
-        '镰刀': `**【${card.name}】**- 有个决定不能再拖了。你已经想了很久。建议：现在就做决定，不要再犹豫。`,
-      }
-
-      if (challenges[card.name]) {
-        challengeReading += challenges[card.name] + "\n\n"
-      }
-    })
-
-    return `牌面中的挑战牌：
-
-${challengeReading}总结：这些挑战不是不可克服的，但需要你主动面对。问题不会自己消失，行动是唯一的解决办法。`
-  }
-
-  /**
-   *【指引】具体的行动建议
-   */
-  const readGuidance = () => {
-    const positiveCards = cards.filter(c =>
-      ['太阳', '星星', '幸运草', '花束', '心', '钥匙', '狗', '鹳鸟', '百合'].includes(c.name)
-    )
-
-    const questionType = analyzeQuestion()
-    const firstCard = cards[0]
-    const lastCard = cards[cards.length - 1]
-
-    let guidance = `**可操作的建议：**
-
-`
-
-    // 根据问题类型给出具体建议
-    if (questionType === 'how_they_see_me') {
-      guidance += `1. **不要过度猜测对方想法**。牌面已经给了你答案，相信它。过度分析只会让你更困惑。
-
-2. **做你自己**。对方对你的看法是基于真实的你，不是你扮演出来的样子。
-
-3. **如果答案不是你期望的**，接受它。改变别人的看法很难，但你可以改变自己的选择。
-
-`
-    } else if (questionType === 'love_feelings') {
-      guidance += `1. **直接沟通比猜测更有效**。如果你真的想知道对方的感受，找机会真诚地聊聊。
-
-2. **给关系时间**。感情不是一蹴而就的，好的感情需要时间培养。
-
-3. **关注对方的行为，不只是语言**。行动比话语更真实。
-
-`
-    } else if (questionType === 'relationship_future') {
-      guidance += `1. **关系的发展需要双方努力**。牌面显示的是可能性，不是保证。你也需要行动。
-
-2. **不要强求**。如果牌面显示有障碍，认真思考这段关系是否值得继续。
-
-3. **信任你的直觉**。如果你在一段关系中感到不安，这种感受很重要。
-
-`
-    } else if (questionType === 'career') {
-      guidance += `1. **专注于你能控制的事情**。有些外部因素你无法改变，但你可以提升自己的能力。
-
-2. **保持耐心**。职业发展需要时间，不要期待一夜之间有巨大变化。
-
-3. **建立人脉**。很多工作机会来自于你认识的人。
-
-`
-    } else if (questionType === 'decision') {
-      guidance += `1. **列出每个选项的利弊**，写在纸上。这会让你思路清晰。
-
-2. **问问自己：一年后我会后悔哪个选择？**这通常能帮你找到答案。
-
-3. **不要追求完美**。没有完美的选择，只有你愿意承担后果的选择。
-
-`
-    } else {
-      guidance += `1. **先搞清楚你真正想要的是什么**。很多时候我们困惑是因为不知道自己的目标。
-
-2. **从小事开始**。不要试图一次解决所有问题。
-
-3. **给自己时间**。重要的思考需要时间，不要急于求成。
-
-`
-    }
-
-    // 根据牌面给出的具体指引
-    if (positiveCards.length > 0) {
-      guidance += `**支持你的力量**：${positiveCards.map(c => c.name).join('、')}。这些牌显示你拥有的资源和优势。好好利用它们。`
-    } else {
-      guidance += `**你的资源**：即使牌面中没有明显的积极牌，这并不意味着你没有资源。你的勇气、智慧和求问的意愿就是最重要的资源。`
-    }
-
-    guidance += `
-
-**最关键的一步**：${getConcreteAnswer(questionType, [lastCard])}`
-
-    return guidance
-  }
-
-  /**
-   * 组装完整的解读
-   */
-  const readingText = `
-**【直接回答】**
-
-${readCurrentSituation()}
-
-
-**【需要面对的问题】**
-
-${readChallenges()}
-
-
-**【具体建议】**
-
-${readGuidance()}
-`
-
   return {
-    opening: question ? `关于您的问题"${question}"，牌面给出了直接的答案。` : "牌面对您的情况给出了以下解读。",
-    readingText,
+    opening: `关于"${question || '您的现状'}"的雷诺曼解读：`,
+    readingText: generateReading(),
     timestamp: new Date().toLocaleString('zh-CN', {
       year: 'numeric',
       month: 'long',
