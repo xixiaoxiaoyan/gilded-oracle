@@ -495,12 +495,11 @@ export default function OracleDeck() {
               </motion.div>
             )}
 
-            {/* 横向滚动容器 */}
+            {/* 网格布局容器 - 6行6列 */}
             <div
-              className={`relative flex items-center gap-6 overflow-x-auto pb-8 transition-all ${
+              className={`relative grid grid-cols-6 gap-4 pb-8 transition-all ${
                 isDeckLocked ? 'opacity-20' : ''
               } ${drawnCards.length > 0 ? 'opacity-40' : ''}`}
-              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255, 255, 255, 0.15) transparent' }}
               onClick={() => {
                 if (isDeckLocked) {
                   setShowWarning(true)
@@ -513,27 +512,25 @@ export default function OracleDeck() {
                   key={card.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  whileHover={isDeckLocked || drawnCards.length > 0 ? {} : { scale: 1.06, y: -12 }}
+                  whileHover={isDeckLocked || drawnCards.length > 0 ? {} : { scale: 1.05, y: -4 }}
                   whileTap={isDeckLocked || drawnCards.length > 0 ? {} : { scale: 0.98 }}
                   onClick={() => tryDrawCard(card, index)}
-                  className="relative flex-shrink-0"
+                  className="relative"
                   style={{
-                    width: '128px',
-                    height: '192px',
                     cursor: isDeckLocked || drawnCards.length > 0 ? 'default' : 'pointer'
                   }}
                 >
                   {/* 卡背 - 极简几何 */}
                   <div
-                    className="w-full h-full bg-gradient-to-br from-white/8 to-white/3 border border-white/15 rounded-[2rem] flex items-center justify-center relative overflow-hidden"
+                    className="w-full aspect-[3/4] bg-gradient-to-br from-white/8 to-white/3 border border-white/15 rounded-[1.5rem] flex items-center justify-center relative overflow-hidden"
                     style={{
-                      boxShadow: (isDeckLocked || drawnCards.length > 0) ? 'none' : '0 12px 40px rgba(255, 255, 255, 0.08)'
+                      boxShadow: (isDeckLocked || drawnCards.length > 0) ? 'none' : '0 8px 24px rgba(255, 255, 255, 0.06)'
                     }}
                   >
                     {/* 极简几何图案 */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-24 h-24 border border-white/20 rounded-full flex items-center justify-center">
-                        <div className="w-14 h-14 bg-white/10 rounded-full" />
+                      <div className="w-16 h-16 border border-white/20 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-white/10 rounded-full" />
                       </div>
                     </div>
                   </div>
