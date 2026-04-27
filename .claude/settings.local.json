@@ -26,7 +26,8 @@
       "Bash(ping *)",
       "Bash(gh repo *)",
       "Bash(dig +short *)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "WebSearch"
     ]
   }
 }

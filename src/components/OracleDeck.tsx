@@ -46,11 +46,9 @@ export default function OracleDeck() {
   const shuffleTimerRef = useRef<NodeJS.Timeout | null>(null)
   const shuffleIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // 环境音系统
+  // 环境音系统 - 天空之城
   const [soundEnabled, setSoundEnabled] = useState(false)
-  const [selectedSound, setSelectedSound] = useState<'fireplace' | 'rain'>('fireplace')
   const [audioLoading, setAudioLoading] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const currentSpread = SPREADS[selectedSpread as keyof typeof SPREADS]
   const canDraw = drawnCards.length < currentSpread.count
@@ -58,47 +56,77 @@ export default function OracleDeck() {
   const hasQuestion = question.trim().length > 0
   const isDeckLocked = !hasQuestion
 
-  // 音效管理 - 简化版
+  // 加载YouTube API
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio()
-      audioRef.current.loop = true
-      audioRef.current.volume = 0.3
+    // 动态加载YouTube iframe API
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    const firstScriptTag = document.getElementsByTagName('script')[0]
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+
+    // 全局回调函数
+    ;(window as any).onYouTubeIframeAPIReady = () => {
+      console.log('YouTube API ready')
     }
+  }, [])
 
-    const audio = audioRef.current
-
-    if (soundEnabled) {
+  // YouTube播放器管理
+  useEffect(() => {
+    if (soundEnabled && !(window as any).YT) {
       setAudioLoading(true)
-
-      // 设置音效源
-      const audioUrl = selectedSound === 'fireplace'
-        ? 'https://assets.mixkit.co/active_storage/sfx/2414/2414-preview.mp3'
-        : 'https://assets.mixkit.co/active_storage/sfx/1912/1912-preview.mp3'
-
-      audio.src = audioUrl
-
-      // 播放音频
-      audio.play()
-        .then(() => {
-          console.log('✅ 音频播放成功')
-          setAudioLoading(false)
-        })
-        .catch((err) => {
-          console.log('❌ 音频播放失败:', err)
-          setAudioLoading(false)
-        })
-    } else {
-      audio.pause()
+      // 等待YouTube API加载
+      const checkYT = setInterval(() => {
+        if ((window as any).YT && (window as any).YT.Player) {
+          clearInterval(checkYT)
+          initPlayer()
+        }
+      }, 100)
+      return () => clearInterval(checkYT)
+    } else if (soundEnabled && !(window as any).player) {
+      initPlayer()
+    } else if (!soundEnabled && (window as any).player) {
+      ;(window as any).player.stopVideo()
       setAudioLoading(false)
     }
 
+    function initPlayer() {
+      if ((window as any).player) return
+
+      setAudioLoading(true)
+      ;(window as any).player = new (window as any).YT.Player('youtube-player', {
+        height: '0',
+        width: '0',
+        videoId: 'h5R5701ti1g', // 天空之城 - 久石让
+        playerVars: {
+          autoplay: 1,
+          loop: 1,
+          playlist: 'h5R5701ti1g',
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1
+        },
+        events: {
+          onReady: (event: any) => {
+            event.target.setVolume(30)
+            event.target.playVideo()
+            setAudioLoading(false)
+            console.log('✅ 天空之城播放成功')
+          },
+          onError: (event: any) => {
+            console.log('❌ YouTube播放错误:', event.data)
+            setAudioLoading(false)
+          }
+        }
+      })
+    }
+
     return () => {
-      if (audio) {
-        audio.pause()
+      if ((window as any).player && !soundEnabled) {
+        ;(window as any).player.stopVideo()
       }
     }
-  }, [soundEnabled, selectedSound])
+  }, [soundEnabled])
 
   const shuffleDeck = () => {
     setIsShuffling(true)
@@ -214,43 +242,18 @@ export default function OracleDeck() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-[#1a1614]">
-      {/* 环境音控制 - 右上角 */}
+      {/* 环境音控制 - 右上角（天空之城） */}
       <div className="fixed top-8 right-8 z-50">
         <div className="flex items-center gap-3">
-          {soundEnabled && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-2"
-            >
-              <button
-                onClick={() => setSelectedSound(selectedSound === 'fireplace' ? 'rain' : 'fireplace')}
-                className={`text-xs font-sans px-3 py-1.5 rounded-xl transition-all font-light ${
-                  selectedSound === 'fireplace'
-                    ? 'bg-white/20 text-white/90'
-                    : 'text-white/40 hover:text-white/60'
-                }`}
-              >
-                壁炉
-              </button>
-              <button
-                onClick={() => setSelectedSound(selectedSound === 'rain' ? 'fireplace' : 'rain')}
-                className={`text-xs font-sans px-3 py-1.5 rounded-xl transition-all font-light ${
-                  selectedSound === 'rain'
-                    ? 'bg-white/20 text-white/90'
-                    : 'text-white/40 hover:text-white/60'
-                }`}
-              >
-                细雨
-              </button>
-            </motion.div>
-          )}
+          {/* 隐藏的YouTube播放器 */}
+          <div id="youtube-player" style={{ display: 'none' }}></div>
+
           <div className="relative">
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
               disabled={audioLoading}
               className="w-12 h-12 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white/60 hover:text-white/80 hover:border-white/20 transition-all disabled:opacity-50"
-              title={soundEnabled ? "关闭环境音" : "开启环境音"}
+              title={soundEnabled ? "关闭天空之城" : "播放天空之城"}
             >
               {audioLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white/60 rounded-full animate-spin" />
@@ -278,7 +281,16 @@ export default function OracleDeck() {
             animate={{ opacity: 1 }}
             className="text-[10px] font-sans text-white/30 mt-2 text-right font-light"
           >
-            点击开启环境音
+            点击播放天空之城
+          </motion.p>
+        )}
+        {soundEnabled && !audioLoading && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-[10px] font-sans text-white/50 mt-2 text-right font-light"
+          >
+            正在播放：天空之城
           </motion.p>
         )}
       </div>
