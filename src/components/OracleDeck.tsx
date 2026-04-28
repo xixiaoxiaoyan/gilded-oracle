@@ -295,7 +295,7 @@ export default function OracleDeck() {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 py-20">
+      <div className="w-full max-w-full px-4 py-20">
         {/* 标题 - 增加呼吸感 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
