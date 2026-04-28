@@ -1,11 +1,43 @@
 /**
  * 严谨的雷诺曼占卜解读引擎
  * 遵循雷诺曼传统规则：诚实、具体、包含负面信息
+ *
+ * 现在集成GLM-5.1进行智能解读，保留传统规则作为备用
  */
 import { lenormandCards } from '@/data/lenormandData'
 
-export const generateOracleReading = (question: string, drawnCards: any[], spreadType: string) => {
+export const generateOracleReading = async (question: string, drawnCards: any[], spreadType: string) => {
   const cards = drawnCards
+
+  try {
+    const response = await fetch('/api/oracle', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        question,
+        cards
+      })
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      return data
+    } else {
+      console.warn('GLM-5.1 API调用失败，使用备用规则系统')
+      return generateRuleBasedReading(question, cards, spreadType)
+    }
+  } catch (error) {
+    console.warn('网络错误，使用备用规则系统', error)
+    return generateRuleBasedReading(question, cards, spreadType)
+  }
+}
+
+/**
+ * 备用规则系统（当GLM-5.1不可用时使用）
+ */
+const generateRuleBasedReading = (question: string, cards: any[], spreadType: string) => {
 
   /**
    * 分析问题类型
@@ -576,6 +608,7 @@ ${negativeCards.length > positiveCards.length ?
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
+    }),
+    isFallback: true
   }
 }

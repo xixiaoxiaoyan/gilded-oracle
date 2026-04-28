@@ -214,13 +214,13 @@ export default function OracleDeck() {
     setReading(null)
   }
 
-  const revealGuidance = () => {
+  const revealGuidance = async () => {
     if (!isComplete) return
 
     setIsRevealing(true)
 
-    setTimeout(() => {
-      const oracleReading = generateOracleReading(question, drawnCards, selectedSpread)
+    setTimeout(async () => {
+      const oracleReading = await generateOracleReading(question, drawnCards, selectedSpread)
       setReading(oracleReading)
       setOracleRevealed(true)
       setIsRevealing(false)
@@ -572,7 +572,7 @@ export default function OracleDeck() {
                 <div className="flex items-center justify-center gap-5 mb-5">
                   <Sparkles className="animate-pulse" size={32} style={{ color: 'rgba(212, 175, 55, 0.5)' }} />
                   <p className="font-sans text-lg text-white/60 font-light">
-                    正在解读...
+                    GLM-5.1 正在解读牌意...
                   </p>
                   <Sparkles className="animate-pulse" size={32} style={{ color: 'rgba(212, 175, 55, 0.5)' }} />
                 </div>
