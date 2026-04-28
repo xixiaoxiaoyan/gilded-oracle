@@ -34,3 +34,12 @@ next-env.d.ts
 
 # backup files
 *.backup
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
