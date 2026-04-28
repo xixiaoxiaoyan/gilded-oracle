@@ -241,7 +241,7 @@ export default function OracleDeck() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-[#1a1614]">
+    <div className="min-h-screen bg-gradient-to-b from-[#1a0000] to-[#0a0a0a]">
       {/* 环境音控制 - 右上角（天空之城） */}
       <div className="fixed top-8 right-8 z-50">
         <div className="flex items-center gap-3">
