@@ -468,11 +468,11 @@ export default function OracleDeck() {
             </div>
           </div>
 
-          {/* 牌堆区 */}
+          {/* 牌堆区 - 网格布局 */}
           <div className="glass rounded-[2.5rem] p-10 mb-10">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-display text-white/80 font-light">
-                牌堆 ({deck.length} 张)
+                牌堆 ({deck.length} 张) - 网格布局
               </h2>
               {drawnCards.length > 0 && (
                 <span className="text-sm font-sans text-white/40 font-light">
