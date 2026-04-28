@@ -495,9 +495,9 @@ export default function OracleDeck() {
               </motion.div>
             )}
 
-            {/* 网格布局容器 - 6行6列 */}
+            {/* 网格布局容器 - 响应式6列网格 */}
             <div
-              className={`relative grid grid-cols-6 gap-4 pb-8 transition-all ${
+              className={`relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 pb-8 w-full transition-all ${
                 isDeckLocked ? 'opacity-20' : ''
               } ${drawnCards.length > 0 ? 'opacity-40' : ''}`}
               onClick={() => {
